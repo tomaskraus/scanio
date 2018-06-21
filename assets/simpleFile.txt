@@ -1,0 +1,11 @@
+this is a simple file
+next line is empty
+
+next line has two spaces
+  
+# bash-like comment
+line with two trailing spaces  
+ line with one leading space
+ line with one leading and one trailing space 
+# bash-like comment 2 
+last line
