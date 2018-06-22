@@ -1,6 +1,6 @@
-// Package line provides se of text-line scanning utilities.
+// Package liner provides se of text-line scanning utilities.
 //
-package line
+package liner
 
 import (
 	"bufio"
