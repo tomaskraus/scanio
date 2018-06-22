@@ -107,7 +107,7 @@ type onlyMatchScanner struct {
 	Scanner
 }
 
-// NewOnlyMatchScanner returns only lines, that underlying scanner matches
+// NewOnlyMatchScanner returns only lines that underlying scanner matches
 func NewOnlyMatchScanner(sc Scanner) Scanner {
 	return Scanner(&onlyMatchScanner{
 		sc,
