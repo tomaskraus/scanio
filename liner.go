@@ -14,8 +14,9 @@ import (
 type Liner interface {
 	Scan() bool
 	Err() error
-	Match() bool
 	Text() string
+	Match() bool      // true if a line matches Liner's requirement
+	Eof() bool        // return true if an end of data occured
 	Original() string // original string of current line
 	Number() int      // number of a current line
 }
@@ -23,10 +24,11 @@ type Liner interface {
 // reader Liner
 type readerLiner struct {
 	sc       *bufio.Scanner
-	original string
 	text     string
-	number   int
 	match    bool
+	eof      bool
+	original string
+	number   int
 }
 
 // NewLiner scans from an io.Reader
@@ -42,6 +44,8 @@ func (rs *readerLiner) Scan() bool {
 	if result {
 		rs.number++
 		rs.match = true
+	} else if rs.sc.Err() == nil {
+		rs.eof = true
 	}
 	return result
 }
@@ -49,12 +53,17 @@ func (rs *readerLiner) Scan() bool {
 func (rs *readerLiner) Err() error {
 	return rs.sc.Err()
 }
+
+func (rs *readerLiner) Text() string {
+	return rs.sc.Text()
+}
+
 func (rs *readerLiner) Match() bool {
 	return rs.match
 }
 
-func (rs *readerLiner) Text() string {
-	return rs.sc.Text()
+func (rs *readerLiner) Eof() bool {
+	return rs.eof
 }
 
 func (rs *readerLiner) Original() string {
@@ -121,6 +130,35 @@ func (fsc *matchLiner) Scan() bool {
 		} else {
 			return true
 		}
+	}
+	return false
+}
+
+type noMatchLiner struct {
+	Liner
+}
+
+// NewNoMatchLiner returns only lines that the underlying Liner does not match
+func NewNoMatchLiner(sc Liner) Liner {
+	return Liner(&noMatchLiner{
+		sc,
+	})
+}
+
+func (fsc *noMatchLiner) Scan() bool {
+	for fsc.Liner.Scan() {
+		if fsc.Liner.Match() {
+			continue
+		} else {
+			return true
+		}
+	}
+	return false
+}
+
+func (fsc *noMatchLiner) Match() bool {
+	if fsc.Liner.Eof() == false {
+		return !fsc.Liner.Match()
 	}
 	return false
 }
