@@ -7,11 +7,12 @@ import (
 )
 
 type result struct {
-	stop     bool
+	canParse bool
 	number   int
 	match    bool
 	text     string
 	original string
+	eof      bool
 }
 
 func TestReaderLinerEmpty(t *testing.T) {
@@ -20,16 +21,16 @@ func TestReaderLinerEmpty(t *testing.T) {
 	sc := NewLiner(f)
 
 	expected := []result{
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -45,26 +46,26 @@ func TestLinerFile(t *testing.T) {
 	sc := NewLiner(f)
 
 	expected := []result{
-		{true, 1, true, "this is a simple file", "this is a simple file"},
-		{true, 2, true, "next line is empty", "next line is empty"},
-		{true, 3, true, "", ""},
-		{true, 4, true, "next line has two spaces", "next line has two spaces"},
-		{true, 5, true, "  ", "  "},
-		{true, 6, true, "# bash-like comment", "# bash-like comment"},
-		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  "},
-		{true, 8, true, " line with one leading space", " line with one leading space"},
-		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space "},
-		{true, 10, true, "# bash-like comment 2 ", "# bash-like comment 2 "},
-		{true, 11, true, "last line", "last line"},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{true, 1, true, "this is a simple file", "this is a simple file", false},
+		{true, 2, true, "next line is empty", "next line is empty", false},
+		{true, 3, true, "", "", false},
+		{true, 4, true, "next line has two spaces", "next line has two spaces", false},
+		{true, 5, true, "  ", "  ", false},
+		{true, 6, true, "# bash-like comment", "# bash-like comment", false},
+		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  ", false},
+		{true, 8, true, " line with one leading space", " line with one leading space", false},
+		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space ", false},
+		{true, 10, true, "# bash-like comment 2 ", "# bash-like comment 2 ", false},
+		{true, 11, true, "last line", "last line", false},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -83,26 +84,26 @@ func TestFilterLiner(t *testing.T) {
 	})
 
 	expected := []result{
-		{true, 1, false, "this is a simple file", "this is a simple file"},
-		{true, 2, false, "next line is empty", "next line is empty"},
-		{true, 3, false, "", ""},
-		{true, 4, false, "next line has two spaces", "next line has two spaces"},
-		{true, 5, false, "  ", "  "},
-		{true, 6, true, " bash-like comment", "# bash-like comment"},
-		{true, 7, false, "line with two trailing spaces  ", "line with two trailing spaces  "},
-		{true, 8, false, " line with one leading space", " line with one leading space"},
-		{true, 9, false, " line with one leading and one trailing space ", " line with one leading and one trailing space "},
-		{true, 10, true, " bash-like comment 2 ", "# bash-like comment 2 "},
-		{true, 11, false, "last line", "last line"},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{true, 1, false, "this is a simple file", "this is a simple file", false},
+		{true, 2, false, "next line is empty", "next line is empty", false},
+		{true, 3, false, "", "", false},
+		{true, 4, false, "next line has two spaces", "next line has two spaces", false},
+		{true, 5, false, "  ", "  ", false},
+		{true, 6, true, " bash-like comment", "# bash-like comment", false},
+		{true, 7, false, "line with two trailing spaces  ", "line with two trailing spaces  ", false},
+		{true, 8, false, " line with one leading space", " line with one leading space", false},
+		{true, 9, false, " line with one leading and one trailing space ", " line with one leading and one trailing space ", false},
+		{true, 10, true, " bash-like comment 2 ", "# bash-like comment 2 ", false},
+		{true, 11, false, "last line", "last line", false},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -113,15 +114,15 @@ func TestMatchLinerEmpty(t *testing.T) {
 	sc := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -136,26 +137,26 @@ func TestMatchLinerFull(t *testing.T) {
 	sc := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
-		{true, 1, true, "this is a simple file", "this is a simple file"},
-		{true, 2, true, "next line is empty", "next line is empty"},
-		{true, 3, true, "", ""},
-		{true, 4, true, "next line has two spaces", "next line has two spaces"},
-		{true, 5, true, "  ", "  "},
-		{true, 6, true, "# bash-like comment", "# bash-like comment"},
-		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  "},
-		{true, 8, true, " line with one leading space", " line with one leading space"},
-		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space "},
-		{true, 10, true, "# bash-like comment 2 ", "# bash-like comment 2 "},
-		{true, 11, true, "last line", "last line"},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{true, 1, true, "this is a simple file", "this is a simple file", false},
+		{true, 2, true, "next line is empty", "next line is empty", false},
+		{true, 3, true, "", "", false},
+		{true, 4, true, "next line has two spaces", "next line has two spaces", false},
+		{true, 5, true, "  ", "  ", false},
+		{true, 6, true, "# bash-like comment", "# bash-like comment", false},
+		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  ", false},
+		{true, 8, true, " line with one leading space", " line with one leading space", false},
+		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space ", false},
+		{true, 10, true, "# bash-like comment 2 ", "# bash-like comment 2 ", false},
+		{true, 11, true, "last line", "last line", false},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -174,17 +175,17 @@ func TestMatchLinerFilter(t *testing.T) {
 		}))
 
 	expected := []result{
-		{true, 6, true, " bash-like comment", "# bash-like comment"},
-		{true, 10, true, " bash-like comment 2 ", "# bash-like comment 2 "},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{true, 6, true, " bash-like comment", "# bash-like comment", false},
+		{true, 10, true, " bash-like comment 2 ", "# bash-like comment 2 ", false},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -195,15 +196,15 @@ func TestNoMatchLinerEmpty(t *testing.T) {
 	sc := NewNoMatchLiner(NewLiner(f))
 
 	expected := []result{
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
-		{false, 0, false, "", ""},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
+		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -219,15 +220,15 @@ func TestNoMatchLinerFull(t *testing.T) {
 	sc := NewNoMatchLiner(NewLiner(f))
 
 	expected := []result{
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
@@ -246,24 +247,24 @@ func TestNoMatchLinerFilter(t *testing.T) {
 		}))
 
 	expected := []result{
-		{true, 1, true, "this is a simple file", "this is a simple file"},
-		{true, 2, true, "next line is empty", "next line is empty"},
-		{true, 3, true, "", ""},
-		{true, 4, true, "next line has two spaces", "next line has two spaces"},
-		{true, 5, true, "  ", "  "},
-		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  "},
-		{true, 8, true, " line with one leading space", " line with one leading space"},
-		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space "},
-		{true, 11, true, "last line", "last line"},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
-		{false, 11, false, "", ""},
+		{true, 1, true, "this is a simple file", "this is a simple file", false},
+		{true, 2, true, "next line is empty", "next line is empty", false},
+		{true, 3, true, "", "", false},
+		{true, 4, true, "next line has two spaces", "next line has two spaces", false},
+		{true, 5, true, "  ", "  ", false},
+		{true, 7, true, "line with two trailing spaces  ", "line with two trailing spaces  ", false},
+		{true, 8, true, " line with one leading space", " line with one leading space", false},
+		{true, 9, true, " line with one leading and one trailing space ", " line with one leading and one trailing space ", false},
+		{true, 11, true, "last line", "last line", false},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
+		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original()
+		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
 
-		if res != v.stop || num != v.number || match != v.match || text != v.text || orig != v.original {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
 		}
 	}
 }
