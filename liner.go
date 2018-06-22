@@ -116,7 +116,7 @@ type matchLiner struct {
 	Liner
 }
 
-// NewOnlyMatchLiner returns only lines that underlying Liner matches
+// NewMatchLiner returns only lines that the underlying Liner matches
 func NewMatchLiner(sc Liner) Liner {
 	return Liner(&matchLiner{
 		sc,
