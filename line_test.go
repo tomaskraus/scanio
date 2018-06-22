@@ -14,10 +14,10 @@ type result struct {
 	original string
 }
 
-func TestReaderScannerEmpty(t *testing.T) {
+func TestReaderLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	sc := NewReaderScanner(f)
+	sc := NewLiner(f)
 
 	expected := []result{
 		{false, 0, false, "", ""},
@@ -34,7 +34,7 @@ func TestReaderScannerEmpty(t *testing.T) {
 	}
 }
 
-func TestReaderScannerFile(t *testing.T) {
+func TestLinerFile(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -42,7 +42,7 @@ func TestReaderScannerFile(t *testing.T) {
 		return
 	}
 
-	sc := NewReaderScanner(f)
+	sc := NewLiner(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file", "this is a simple file"},
@@ -69,7 +69,7 @@ func TestReaderScannerFile(t *testing.T) {
 	}
 }
 
-func TestRuleScanner(t *testing.T) {
+func TestFilterLiner(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -78,7 +78,7 @@ func TestRuleScanner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	sc := NewFilterScanner(NewReaderScanner(f), func(in string) (bool, string) {
+	sc := NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
 		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 	})
 
@@ -107,10 +107,10 @@ func TestRuleScanner(t *testing.T) {
 	}
 }
 
-func TestOnlyMatchScannerEmpty(t *testing.T) {
+func TestMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	sc := NewOnlyMatchScanner(NewReaderScanner(f))
+	sc := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{false, 0, false, "", ""},
@@ -125,7 +125,7 @@ func TestOnlyMatchScannerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestOnlyMatchScannerFull(t *testing.T) {
+func TestMatchLinerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -133,7 +133,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	sc := NewOnlyMatchScanner(NewReaderScanner(f))
+	sc := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file", "this is a simple file"},
@@ -159,7 +159,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		}
 	}
 }
-func TestOnlyMatchScannerFilter(t *testing.T) {
+func TestMatchLinerFilter(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -168,8 +168,8 @@ func TestOnlyMatchScannerFilter(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	sc := NewOnlyMatchScanner(
-		NewFilterScanner(NewReaderScanner(f), func(in string) (bool, string) {
+	sc := NewMatchLiner(
+		NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		}))
 

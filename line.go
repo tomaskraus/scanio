@@ -7,11 +7,11 @@ import (
 	"io"
 )
 
-// Scanner interface for reading text lines.
+// Liner interface for reading text lines.
 // Scan, Err and Text are methods similar to the bufio.Scanner.
 // Provides an additional information - current line number etc.
 // Text returns an original current line content
-type Scanner interface {
+type Liner interface {
 	Scan() bool
 	Err() error
 	Match() bool
@@ -20,8 +20,8 @@ type Scanner interface {
 	Number() int      // number of a current line
 }
 
-// reader scanner
-type readerScanner struct {
+// reader Liner
+type readerLiner struct {
 	sc       *bufio.Scanner
 	original string
 	text     string
@@ -29,14 +29,14 @@ type readerScanner struct {
 	match    bool
 }
 
-// NewReaderScanner scans from an io.Reader
-func NewReaderScanner(r io.Reader) Scanner {
-	return Scanner(&readerScanner{
+// NewLiner scans from an io.Reader
+func NewLiner(r io.Reader) Liner {
+	return Liner(&readerLiner{
 		sc: bufio.NewScanner(r),
 	})
 }
 
-func (rs *readerScanner) Scan() bool {
+func (rs *readerLiner) Scan() bool {
 	rs.match = false
 	result := rs.sc.Scan()
 	if result {
@@ -46,38 +46,38 @@ func (rs *readerScanner) Scan() bool {
 	return result
 }
 
-func (rs *readerScanner) Err() error {
+func (rs *readerLiner) Err() error {
 	return rs.sc.Err()
 }
-func (rs *readerScanner) Match() bool {
+func (rs *readerLiner) Match() bool {
 	return rs.match
 }
 
-func (rs *readerScanner) Text() string {
+func (rs *readerLiner) Text() string {
 	return rs.sc.Text()
 }
 
-func (rs *readerScanner) Original() string {
+func (rs *readerLiner) Original() string {
 	return rs.sc.Text()
 }
 
-func (rs *readerScanner) Number() int {
+func (rs *readerLiner) Number() int {
 	return rs.number
 }
 
-// MatchRule for NewFilterScanner
+// MatchRule for NewFilterLiner
 type MatchRule func(input string) (match bool, text string)
 
-type filterScanner struct {
-	Scanner
+type filterLiner struct {
+	Liner
 	rule   MatchRule
 	matchf bool
 	textf  string
 }
 
-// NewFilterScanner returns new, rule-based scanner
-func NewFilterScanner(sc Scanner, rule MatchRule) Scanner {
-	return Scanner(&filterScanner{
+// NewFilterLiner returns new, rule-based Liner
+func NewFilterLiner(sc Liner, rule MatchRule) Liner {
+	return Liner(&filterLiner{
 		sc,
 		rule,
 		false,
@@ -85,38 +85,38 @@ func NewFilterScanner(sc Scanner, rule MatchRule) Scanner {
 	})
 }
 
-func (fsc *filterScanner) Scan() bool {
-	scanResult := fsc.Scanner.Scan()
+func (fsc *filterLiner) Scan() bool {
+	scanResult := fsc.Liner.Scan()
 	if scanResult {
-		fsc.matchf, fsc.textf = fsc.rule(fsc.Scanner.Text())
+		fsc.matchf, fsc.textf = fsc.rule(fsc.Liner.Text())
 	} else {
 		fsc.matchf, fsc.textf = false, ""
 	}
 	return scanResult
 }
 
-func (fsc *filterScanner) Match() bool {
+func (fsc *filterLiner) Match() bool {
 	return fsc.matchf
 }
 
-func (fsc *filterScanner) Text() string {
+func (fsc *filterLiner) Text() string {
 	return fsc.textf
 }
 
-type onlyMatchScanner struct {
-	Scanner
+type matchLiner struct {
+	Liner
 }
 
-// NewOnlyMatchScanner returns only lines that underlying scanner matches
-func NewOnlyMatchScanner(sc Scanner) Scanner {
-	return Scanner(&onlyMatchScanner{
+// NewOnlyMatchLiner returns only lines that underlying Liner matches
+func NewMatchLiner(sc Liner) Liner {
+	return Liner(&matchLiner{
 		sc,
 	})
 }
 
-func (fsc *onlyMatchScanner) Scan() bool {
-	for fsc.Scanner.Scan() {
-		if fsc.Scanner.Match() != true {
+func (fsc *matchLiner) Scan() bool {
+	for fsc.Liner.Scan() {
+		if fsc.Liner.Match() != true {
 			continue
 		} else {
 			return true
