@@ -18,7 +18,7 @@ type result struct {
 func TestReaderLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	sc := NewLiner(f)
+	lin := NewLiner(f)
 
 	expected := []result{
 		{false, 0, false, "", "", true},
@@ -27,7 +27,7 @@ func TestReaderLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -43,7 +43,7 @@ func TestLinerFile(t *testing.T) {
 		return
 	}
 
-	sc := NewLiner(f)
+	lin := NewLiner(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file", "this is a simple file", false},
@@ -62,7 +62,7 @@ func TestLinerFile(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -79,7 +79,7 @@ func TestFilterLiner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	sc := NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
+	lin := NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
 		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 	})
 
@@ -100,7 +100,7 @@ func TestFilterLiner(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -111,7 +111,7 @@ func TestFilterLiner(t *testing.T) {
 func TestMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	sc := NewMatchLiner(NewLiner(f))
+	lin := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{false, 0, false, "", "", true},
@@ -119,7 +119,7 @@ func TestMatchLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -134,7 +134,7 @@ func TestMatchLinerFull(t *testing.T) {
 		return
 	}
 
-	sc := NewMatchLiner(NewLiner(f))
+	lin := NewMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file", "this is a simple file", false},
@@ -153,7 +153,7 @@ func TestMatchLinerFull(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -169,7 +169,7 @@ func TestMatchLinerFilter(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	sc := NewMatchLiner(
+	lin := NewMatchLiner(
 		NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		}))
@@ -182,7 +182,7 @@ func TestMatchLinerFilter(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -193,7 +193,7 @@ func TestMatchLinerFilter(t *testing.T) {
 func TestNoMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	sc := NewNoMatchLiner(NewLiner(f))
+	lin := NewNoMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{false, 0, false, "", "", true},
@@ -201,7 +201,7 @@ func TestNoMatchLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -217,7 +217,7 @@ func TestNoMatchLinerFull(t *testing.T) {
 		return
 	}
 
-	sc := NewNoMatchLiner(NewLiner(f))
+	lin := NewNoMatchLiner(NewLiner(f))
 
 	expected := []result{
 		{false, 11, false, "", "", true},
@@ -225,7 +225,7 @@ func TestNoMatchLinerFull(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
@@ -241,7 +241,7 @@ func TestNoMatchLinerFilter(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	sc := NewNoMatchLiner(
+	lin := NewNoMatchLiner(
 		NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		}))
@@ -261,7 +261,7 @@ func TestNoMatchLinerFilter(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := sc.Scan(), sc.Number(), sc.Match(), sc.Text(), sc.Original(), sc.Eof()
+		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
 
 		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})

@@ -38,40 +38,40 @@ func NewLiner(r io.Reader) Liner {
 	})
 }
 
-func (rs *readerLiner) Scan() bool {
-	rs.match = false
-	result := rs.sc.Scan()
+func (rli *readerLiner) Scan() bool {
+	rli.match = false
+	result := rli.sc.Scan()
 	if result {
-		rs.number++
-		rs.match = true
-	} else if rs.sc.Err() == nil {
-		rs.eof = true
+		rli.number++
+		rli.match = true
+	} else if rli.sc.Err() == nil {
+		rli.eof = true
 	}
 	return result
 }
 
-func (rs *readerLiner) Err() error {
-	return rs.sc.Err()
+func (rli *readerLiner) Err() error {
+	return rli.sc.Err()
 }
 
-func (rs *readerLiner) Text() string {
-	return rs.sc.Text()
+func (rli *readerLiner) Text() string {
+	return rli.sc.Text()
 }
 
-func (rs *readerLiner) Match() bool {
-	return rs.match
+func (rli *readerLiner) Match() bool {
+	return rli.match
 }
 
-func (rs *readerLiner) Eof() bool {
-	return rs.eof
+func (rli *readerLiner) Eof() bool {
+	return rli.eof
 }
 
-func (rs *readerLiner) Original() string {
-	return rs.sc.Text()
+func (rli *readerLiner) Original() string {
+	return rli.sc.Text()
 }
 
-func (rs *readerLiner) Number() int {
-	return rs.number
+func (rli *readerLiner) Number() int {
+	return rli.number
 }
 
 // MatchRule for NewFilterLiner
@@ -85,31 +85,31 @@ type filterLiner struct {
 }
 
 // NewFilterLiner returns new, rule-based Liner
-func NewFilterLiner(sc Liner, rule MatchRule) Liner {
+func NewFilterLiner(lin Liner, rule MatchRule) Liner {
 	return Liner(&filterLiner{
-		sc,
+		lin,
 		rule,
 		false,
 		"",
 	})
 }
 
-func (fsc *filterLiner) Scan() bool {
-	scanResult := fsc.Liner.Scan()
+func (fli *filterLiner) Scan() bool {
+	scanResult := fli.Liner.Scan()
 	if scanResult {
-		fsc.matchf, fsc.textf = fsc.rule(fsc.Liner.Text())
+		fli.matchf, fli.textf = fli.rule(fli.Liner.Text())
 	} else {
-		fsc.matchf, fsc.textf = false, ""
+		fli.matchf, fli.textf = false, ""
 	}
 	return scanResult
 }
 
-func (fsc *filterLiner) Match() bool {
-	return fsc.matchf
+func (fli *filterLiner) Match() bool {
+	return fli.matchf
 }
 
-func (fsc *filterLiner) Text() string {
-	return fsc.textf
+func (fli *filterLiner) Text() string {
+	return fli.textf
 }
 
 type matchLiner struct {
@@ -117,15 +117,15 @@ type matchLiner struct {
 }
 
 // NewMatchLiner returns only lines that the underlying Liner matches
-func NewMatchLiner(sc Liner) Liner {
+func NewMatchLiner(li Liner) Liner {
 	return Liner(&matchLiner{
-		sc,
+		li,
 	})
 }
 
-func (fsc *matchLiner) Scan() bool {
-	for fsc.Liner.Scan() {
-		if fsc.Liner.Match() != true {
+func (mli *matchLiner) Scan() bool {
+	for mli.Liner.Scan() {
+		if mli.Liner.Match() != true {
 			continue
 		} else {
 			return true
@@ -139,15 +139,15 @@ type noMatchLiner struct {
 }
 
 // NewNoMatchLiner returns only lines that the underlying Liner does not match
-func NewNoMatchLiner(sc Liner) Liner {
+func NewNoMatchLiner(li Liner) Liner {
 	return Liner(&noMatchLiner{
-		sc,
+		li,
 	})
 }
 
-func (fsc *noMatchLiner) Scan() bool {
-	for fsc.Liner.Scan() {
-		if fsc.Liner.Match() {
+func (nli *noMatchLiner) Scan() bool {
+	for nli.Liner.Scan() {
+		if nli.Liner.Match() {
 			continue
 		} else {
 			return true
@@ -156,9 +156,9 @@ func (fsc *noMatchLiner) Scan() bool {
 	return false
 }
 
-func (fsc *noMatchLiner) Match() bool {
-	if fsc.Liner.Eof() == false {
-		return !fsc.Liner.Match()
+func (nli *noMatchLiner) Match() bool {
+	if nli.Liner.Eof() == false {
+		return !nli.Liner.Match()
 	}
 	return false
 }
