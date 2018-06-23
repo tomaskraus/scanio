@@ -12,7 +12,7 @@ type result struct {
 	match    bool
 	text     string
 	original string
-	eof      bool
+	end      bool
 }
 
 type resultL struct {
@@ -21,7 +21,7 @@ type resultL struct {
 	match    bool
 	text     string
 	original string
-	eof      bool
+	end      bool
 	last     bool
 }
 
@@ -37,10 +37,10 @@ func TestReaderLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -72,10 +72,10 @@ func TestLinerFile(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -110,10 +110,10 @@ func TestFilterLiner(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -129,10 +129,10 @@ func TestMatchLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -163,10 +163,10 @@ func TestMatchLinerFull(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -192,10 +192,10 @@ func TestMatchLinerFilter(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -211,10 +211,10 @@ func TestNoMatchLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -235,10 +235,10 @@ func TestNoMatchLinerFull(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -271,10 +271,10 @@ func TestNoMatchLinerFilter(t *testing.T) {
 		{false, 11, false, "", "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof()
+		res, num, match, text, orig, end := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, eof})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text, orig, end})
 		}
 	}
 }
@@ -290,10 +290,10 @@ func TestLastLinerEmpty(t *testing.T) {
 		{false, 0, false, "", "", true, true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof(), lin.Last()
+		res, num, match, text, orig, end, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End(), lin.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, eof, last})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, end, last})
 		}
 	}
 }
@@ -308,10 +308,10 @@ func TestLastLinerOneLine(t *testing.T) {
 		{false, 1, false, "", "", true, true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof(), lin.Last()
+		res, num, match, text, orig, end, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End(), lin.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, eof, last})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, end, last})
 		}
 	}
 }
@@ -343,10 +343,10 @@ func TestLastLinerFull(t *testing.T) {
 		{false, 11, false, "", "", true, true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof(), lin.Last()
+		res, num, match, text, orig, end, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End(), lin.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, eof, last})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, end, last})
 		}
 	}
 }
@@ -373,10 +373,10 @@ func TestLastLinerFilter(t *testing.T) {
 		{false, 11, false, "", "", true, true},
 	}
 	for _, v := range expected {
-		res, num, match, text, orig, eof, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.Eof(), lin.Last()
+		res, num, match, text, orig, end, last := lin.Scan(), lin.Number(), lin.Match(), lin.Text(), lin.Original(), lin.End(), lin.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || eof != v.eof || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, eof, last})
+		if res != v.canParse || num != v.number || match != v.match || text != v.text || orig != v.original || end != v.end || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, orig, end, last})
 		}
 	}
 }
