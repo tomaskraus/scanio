@@ -138,31 +138,6 @@ type noMatchLiner struct {
 	Liner
 }
 
-// NewNoMatchLiner returns only lines that the underlying Liner does not match
-func NewNoMatchLiner(li Liner) Liner {
-	return Liner(&noMatchLiner{
-		li,
-	})
-}
-
-func (nli *noMatchLiner) Scan() bool {
-	for nli.Liner.Scan() {
-		if nli.Liner.Match() {
-			continue
-		} else {
-			return true
-		}
-	}
-	return false
-}
-
-func (nli *noMatchLiner) Match() bool {
-	if nli.Liner.End() == false {
-		return !nli.Liner.Match()
-	}
-	return false
-}
-
 // info Liner info
 type info struct {
 	Text     string
