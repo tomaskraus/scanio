@@ -162,3 +162,82 @@ func (nli *noMatchLiner) Match() bool {
 	}
 	return false
 }
+
+// info Liner info
+type info struct {
+	Text     string
+	Original string
+	Number   int
+	Match    bool
+	Eof      bool
+}
+
+// UpdateInfo updates an Info, reflecting current state of a Liner.
+func updateInfo(info *info, li Liner) {
+	info.Text, info.Original, info.Number, info.Match, info.Eof =
+		li.Text(),
+		li.Original(),
+		li.Number(),
+		li.Match(),
+		li.Eof()
+}
+
+// LastLiner knows if the line is the last one
+type LastLiner interface {
+	Liner
+	Last() bool
+}
+
+type lastLiner struct {
+	Liner
+	info, nextInfo            *info
+	last                      bool // true if the current line is the last one
+	started                   bool
+	previousScan, currentScan bool
+}
+
+// NewLastLiner creates a new LastLiner from liner.
+func NewLastLiner(li Liner) LastLiner {
+	return LastLiner(&lastLiner{
+		Liner:    li,
+		info:     &info{},
+		nextInfo: &info{},
+		last:     false,
+	})
+}
+
+func (lli *lastLiner) Scan() bool {
+	if !lli.started {
+		lli.previousScan = lli.Liner.Scan()
+		updateInfo(lli.info, lli.Liner)
+		lli.currentScan = lli.Liner.Scan()
+		updateInfo(lli.nextInfo, lli.Liner)
+		lli.started = true
+		return lli.previousScan
+	}
+	lli.info, lli.nextInfo = lli.nextInfo, lli.info
+	lli.previousScan, lli.currentScan = lli.currentScan, lli.Liner.Scan()
+	updateInfo(lli.nextInfo, lli.Liner)
+	return lli.previousScan
+}
+
+func (lli *lastLiner) Text() string {
+	return lli.info.Text
+}
+
+func (lli *lastLiner) Original() string {
+	return lli.info.Original
+}
+func (lli *lastLiner) Number() int {
+	return lli.info.Number
+}
+func (lli *lastLiner) Match() bool {
+	return lli.info.Match
+}
+func (lli *lastLiner) Eof() bool {
+	return lli.info.Eof
+}
+
+func (lli *lastLiner) Last() bool {
+	return lli.nextInfo.Eof
+}
