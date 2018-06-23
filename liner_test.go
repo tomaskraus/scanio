@@ -80,7 +80,7 @@ func TestLinerFile(t *testing.T) {
 	}
 }
 
-func TestFiltr2Linr(t *testing.T) {
+func TestFilterLiner(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
