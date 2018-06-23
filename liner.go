@@ -15,10 +15,9 @@ type Liner interface {
 	Scan() bool
 	Err() error
 	Text() string
-	Match() bool      // true if a line matches Liner's requirement
-	End() bool        // return true if an end of data occured
-	Original() string // original string of current line
-	Number() int      // number of a current line
+	Match() bool // true if a line matches Liner's MatchRule
+	End() bool   // return true if an end of data occured
+	Number() int // number of a current line
 }
 
 // reader Liner
@@ -64,10 +63,6 @@ func (rli *readerLiner) Match() bool {
 
 func (rli *readerLiner) End() bool {
 	return rli.end
-}
-
-func (rli *readerLiner) Original() string {
-	return rli.sc.Text()
 }
 
 func (rli *readerLiner) Number() int {
@@ -145,18 +140,16 @@ type noMatchLiner struct {
 
 // info Liner info
 type Info struct {
-	Text     string
-	Original string
-	Number   int
-	Match    bool
-	End      bool
+	Text   string
+	Number int
+	Match  bool
+	End    bool
 }
 
 // UpdateInfo updates an Info, reflecting current state of a Liner.
 func updateInfo(info *Info, li Liner) {
-	info.Text, info.Original, info.Number, info.Match, info.End =
+	info.Text, info.Number, info.Match, info.End =
 		li.Text(),
-		li.Original(),
 		li.Number(),
 		li.Match(),
 		li.End()
@@ -205,9 +198,6 @@ func (lli *lastLiner) Text() string {
 	return lli.info.Text
 }
 
-func (lli *lastLiner) Original() string {
-	return lli.info.Original
-}
 func (lli *lastLiner) Number() int {
 	return lli.info.Number
 }
