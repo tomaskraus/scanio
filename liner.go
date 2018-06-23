@@ -130,7 +130,7 @@ type noMatchLiner struct {
 	Liner
 }
 
-// info Liner info
+// Info Liner info.
 type Info struct {
 	Text   string
 	Number int
