@@ -80,7 +80,7 @@ func TestLinerFile(t *testing.T) {
 	}
 }
 
-func TestFilterLiner(t *testing.T) {
+func TestFiltr2Linr(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -89,7 +89,7 @@ func TestFilterLiner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	lin := NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
+	lin := NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
 		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 	})
 
@@ -121,7 +121,7 @@ func TestFilterLiner(t *testing.T) {
 func TestMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	lin := NewMatchLiner(NewLiner(f))
+	lin := NewFilterLiner(NewLiner(f))
 
 	expected := []result{
 		{false, 0, false, "", "", true},
@@ -144,7 +144,7 @@ func TestMatchLinerFull(t *testing.T) {
 		return
 	}
 
-	lin := NewMatchLiner(NewLiner(f))
+	lin := NewFilterLiner(NewLiner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file", "this is a simple file", false},
@@ -179,8 +179,8 @@ func TestMatchLinerFilter(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	lin := NewMatchLiner(
-		NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
+	lin := NewFilterLiner(
+		NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		}))
 
@@ -252,7 +252,7 @@ func TestNoMatchLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewNoMatchLiner(
-		NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
+		NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		}))
 
@@ -324,7 +324,7 @@ func TestLastLinerFull(t *testing.T) {
 		return
 	}
 
-	lin := NewLastLiner(NewMatchLiner(NewLiner(f)))
+	lin := NewLastLiner(NewFilterLiner(NewLiner(f)))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", "this is a simple file", false, false},
@@ -361,7 +361,7 @@ func TestLastLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewLastLiner(
-		NewMatchLiner(NewFilterLiner(NewLiner(f), func(in string) (bool, string) {
+		NewFilterLiner(NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
 			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
 		})))
 

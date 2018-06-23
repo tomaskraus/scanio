@@ -74,19 +74,19 @@ func (rli *readerLiner) Number() int {
 	return rli.number
 }
 
-// MatchRule for NewFilterLiner
+// MatchRule for NewMatchLiner
 type MatchRule func(input string) (match bool, text string)
 
-type filterLiner struct {
+type matchLiner struct {
 	Liner
 	rule   MatchRule
-	matchf bool
-	textf  string
+	matchr bool
+	textr  string
 }
 
-// NewFilterLiner returns new, rule-based Liner
-func NewFilterLiner(lin Liner, rule MatchRule) Liner {
-	return Liner(&filterLiner{
+// NewMatchLiner returns new, rule-based Liner
+func NewMatchLiner(lin Liner, rule MatchRule) Liner {
+	return Liner(&matchLiner{
 		lin,
 		rule,
 		false,
@@ -94,36 +94,36 @@ func NewFilterLiner(lin Liner, rule MatchRule) Liner {
 	})
 }
 
-func (fli *filterLiner) Scan() bool {
+func (fli *matchLiner) Scan() bool {
 	scanResult := fli.Liner.Scan()
 	if scanResult {
-		fli.matchf, fli.textf = fli.rule(fli.Liner.Text())
+		fli.matchr, fli.textr = fli.rule(fli.Liner.Text())
 	} else {
-		fli.matchf, fli.textf = false, ""
+		fli.matchr, fli.textr = false, ""
 	}
 	return scanResult
 }
 
-func (fli *filterLiner) Match() bool {
-	return fli.matchf
+func (fli *matchLiner) Match() bool {
+	return fli.matchr
 }
 
-func (fli *filterLiner) Text() string {
-	return fli.textf
+func (fli *matchLiner) Text() string {
+	return fli.textr
 }
 
-type matchLiner struct {
+type filterLiner struct {
 	Liner
 }
 
-// NewMatchLiner returns only lines that the underlying Liner matches
-func NewMatchLiner(li Liner) Liner {
-	return Liner(&matchLiner{
+// NewFilterLiner returns only lines that the underlying Liner matches
+func NewFilterLiner(li Liner) Liner {
+	return Liner(&filterLiner{
 		li,
 	})
 }
 
-func (mli *matchLiner) Scan() bool {
+func (mli *filterLiner) Scan() bool {
 	for mli.Liner.Scan() {
 		if mli.Liner.Match() != true {
 			continue
