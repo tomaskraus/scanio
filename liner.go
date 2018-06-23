@@ -16,7 +16,6 @@ type Liner interface {
 	Err() error
 	Text() string
 	Match() bool // true if a line matches Liner's MatchRule
-	End() bool   // return true if an end of data occured
 	Number() int // number of a current line
 }
 
@@ -25,7 +24,6 @@ type readerLiner struct {
 	sc       *bufio.Scanner
 	text     string
 	match    bool
-	end      bool
 	original string
 	number   int
 }
@@ -43,8 +41,6 @@ func (rli *readerLiner) Scan() bool {
 	if result {
 		rli.number++
 		rli.match = true
-	} else if rli.sc.Err() == nil {
-		rli.end = true
 	}
 	return result
 }
@@ -59,10 +55,6 @@ func (rli *readerLiner) Text() string {
 
 func (rli *readerLiner) Match() bool {
 	return rli.match
-}
-
-func (rli *readerLiner) End() bool {
-	return rli.end
 }
 
 func (rli *readerLiner) Number() int {
@@ -143,16 +135,11 @@ type Info struct {
 	Text   string
 	Number int
 	Match  bool
-	End    bool
 }
 
 // UpdateInfo updates an Info, reflecting current state of a Liner.
 func updateInfo(info *Info, li Liner) {
-	info.Text, info.Number, info.Match, info.End =
-		li.Text(),
-		li.Number(),
-		li.Match(),
-		li.End()
+	info.Text, info.Number, info.Match = li.Text(), li.Number(), li.Match()
 }
 
 // LastLiner knows if the line is the last one
@@ -204,10 +191,7 @@ func (lli *lastLiner) Number() int {
 func (lli *lastLiner) Match() bool {
 	return lli.info.Match
 }
-func (lli *lastLiner) End() bool {
-	return lli.info.End
-}
 
 func (lli *lastLiner) Last() bool {
-	return lli.nextInfo.End
+	return lli.currentScan == false
 }
