@@ -126,10 +126,6 @@ func (mli *filterLiner) Scan() bool {
 	return false
 }
 
-type noMatchLiner struct {
-	Liner
-}
-
 // Info Liner info.
 type Info struct {
 	Text   string
