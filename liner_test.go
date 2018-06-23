@@ -85,8 +85,8 @@ func TestFilterLiner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	lin := NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
-		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
+	lin := NewMatchLiner(NewLiner(f), func(in string, inf Info) bool {
+		return strings.HasPrefix(in, "#")
 	})
 
 	expected := []result{
@@ -95,11 +95,11 @@ func TestFilterLiner(t *testing.T) {
 		{true, 3, false, ""},
 		{true, 4, false, "next line has two spaces"},
 		{true, 5, false, "  "},
-		{true, 6, true, " bash-like comment"},
+		{true, 6, true, "# bash-like comment"},
 		{true, 7, false, "line with two trailing spaces  "},
 		{true, 8, false, " line with one leading space"},
 		{true, 9, false, " line with one leading and one trailing space "},
-		{true, 10, true, " bash-like comment 2 "},
+		{true, 10, true, "# bash-like comment 2 "},
 		{true, 11, false, "last line"},
 		{false, 11, false, ""},
 		{false, 11, false, ""},
@@ -176,13 +176,13 @@ func TestMatchLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewFilterLiner(
-		NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
-			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
+		NewMatchLiner(NewLiner(f), func(in string, inf Info) bool {
+			return strings.HasPrefix(in, "#")
 		}))
 
 	expected := []result{
-		{true, 6, true, " bash-like comment"},
-		{true, 10, true, " bash-like comment 2 "},
+		{true, 6, true, "# bash-like comment"},
+		{true, 10, true, "# bash-like comment 2 "},
 		{false, 11, false, ""},
 		{false, 11, false, ""},
 		{false, 11, false, ""},
@@ -278,13 +278,13 @@ func TestLastLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewLastLiner(
-		NewFilterLiner(NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
-			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
+		NewFilterLiner(NewMatchLiner(NewLiner(f), func(in string, inf Info) bool {
+			return strings.HasPrefix(in, "#")
 		})))
 
 	expected := []resultL{
-		{true, 6, true, " bash-like comment", false},
-		{true, 10, true, " bash-like comment 2 ", true},
+		{true, 6, true, "# bash-like comment", false},
+		{true, 10, true, "# bash-like comment 2 ", true},
 		{false, 11, false, "", true},
 		{false, 11, false, "", true},
 		{false, 11, false, "", true},

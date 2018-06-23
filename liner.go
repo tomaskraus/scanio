@@ -37,12 +37,12 @@ func NewLiner(r io.Reader) Liner {
 
 func (rli *readerLiner) Scan() bool {
 	rli.match = false
-	result := rli.sc.Scan()
-	if result {
+	if rli.sc.Scan() {
 		rli.number++
 		rli.match = true
+		return true
 	}
-	return result
+	return false
 }
 
 func (rli *readerLiner) Err() error {
@@ -62,15 +62,13 @@ func (rli *readerLiner) Number() int {
 }
 
 // MatchRule for NewMatchLiner
-type MatchRule func(input string, info Info) (match bool, text string, stop bool)
+type MatchRule func(input string, info Info) bool
 
 type matchLiner struct {
 	Liner
 	rule   MatchRule
 	info   *Info
 	matchr bool
-	textr  string
-	stop   bool
 }
 
 // NewMatchLiner returns new, rule-based Liner
@@ -83,25 +81,16 @@ func NewMatchLiner(lin Liner, rule MatchRule) Liner {
 }
 
 func (fli *matchLiner) Scan() bool {
-	scanResult := fli.Liner.Scan()
-	if scanResult {
+	if fli.Liner.Scan() {
 		updateInfo(fli.info, fli.Liner)
-		fli.matchr, fli.textr, fli.stop = fli.rule(fli.Liner.Text(), *fli.info)
-		if fli.stop {
-			return false
-		}
-	} else {
-		fli.matchr, fli.textr = false, ""
+		fli.matchr = fli.rule(fli.Liner.Text(), *fli.info)
+		return true
 	}
-	return scanResult
+	return false
 }
 
 func (fli *matchLiner) Match() bool {
 	return fli.matchr
-}
-
-func (fli *matchLiner) Text() string {
-	return fli.textr
 }
 
 type filterLiner struct {
@@ -138,7 +127,7 @@ func updateInfo(info *Info, li Liner) {
 	info.Text, info.Number, info.Match = li.Text(), li.Number(), li.Match()
 }
 
-// LastLiner knows if the line is the last one
+// LastLiner knows if the line is the last one.
 type LastLiner interface {
 	Liner
 	Last() bool
