@@ -61,33 +61,33 @@ func (rli *readerLiner) Number() int {
 	return rli.number
 }
 
-// MatchRule for NewMatchLiner
+// MatchRule for NewRuleLiner
 type MatchRule func(input string) bool
 
-type matchLiner struct {
+type ruleLiner struct {
 	Liner
 	rule   MatchRule
 	matchr bool
 }
 
-// NewMatchLiner returns new, rule-based Liner
-func NewMatchLiner(lin Liner, rule MatchRule) Liner {
-	return Liner(&matchLiner{
-		Liner: lin,
+// NewRuleLiner returns new, rule-based Liner
+func NewRuleLiner(li Liner, rule MatchRule) Liner {
+	return Liner(&ruleLiner{
+		Liner: li,
 		rule:  rule,
 	})
 }
 
-func (fli *matchLiner) Scan() bool {
-	if fli.Liner.Scan() {
-		fli.matchr = fli.rule(fli.Liner.Text())
+func (rli *ruleLiner) Scan() bool {
+	if rli.Liner.Scan() {
+		rli.matchr = rli.rule(rli.Liner.Text())
 		return true
 	}
 	return false
 }
 
-func (fli *matchLiner) Match() bool {
-	return fli.matchr
+func (rli *ruleLiner) Match() bool {
+	return rli.matchr
 }
 
 type filterLiner struct {
