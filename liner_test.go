@@ -89,8 +89,8 @@ func TestFilterLiner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	lin := NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
-		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
+	lin := NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
+		return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
 	})
 
 	expected := []result{
@@ -180,8 +180,8 @@ func TestMatchLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewFilterLiner(
-		NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
-			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
+		NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
+			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
 		}))
 
 	expected := []result{
@@ -282,8 +282,8 @@ func TestLastLinerFilter(t *testing.T) {
 
 	// matches a line with a # at the begin, trims a #
 	lin := NewLastLiner(
-		NewFilterLiner(NewMatchLiner(NewLiner(f), func(in string) (bool, string) {
-			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1)
+		NewFilterLiner(NewMatchLiner(NewLiner(f), func(in string, inf Info) (bool, string, bool) {
+			return strings.HasPrefix(in, "#"), strings.Replace(in, "#", "", 1), false
 		})))
 
 	expected := []resultL{
