@@ -10,7 +10,7 @@ import (
 // Liner interface for reading text lines.
 // Scan, Err and Text are methods similar to the bufio.Scanner.
 // Provides an additional information - current line number etc.
-// Text returns an original current line content
+// Text returns current line content
 type Liner interface {
 	Scan() bool
 	Err() error
@@ -21,11 +21,10 @@ type Liner interface {
 
 // reader Liner
 type readerLiner struct {
-	sc       *bufio.Scanner
-	text     string
-	match    bool
-	original string
-	lineNum  int
+	sc      *bufio.Scanner
+	text    string
+	match   bool
+	lineNum int
 }
 
 // NewLiner scans from an io.Reader
