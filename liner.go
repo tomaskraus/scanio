@@ -15,8 +15,8 @@ type Liner interface {
 	Scan() bool
 	Err() error
 	Text() string
-	Match() bool // true if a line matches Liner's MatchRule
-	Number() int // number of a current line
+	Match() bool  // true if a line matches Liner's MatchRule
+	LineNum() int // number of a current line
 }
 
 // reader Liner
@@ -25,11 +25,11 @@ type readerLiner struct {
 	text     string
 	match    bool
 	original string
-	number   int
+	lineNum  int
 }
 
 // NewLiner scans from an io.Reader
-func NewLiner(r io.Reader) Liner {
+func New(r io.Reader) Liner {
 	return Liner(&readerLiner{
 		sc: bufio.NewScanner(r),
 	})
@@ -38,7 +38,7 @@ func NewLiner(r io.Reader) Liner {
 func (rli *readerLiner) Scan() bool {
 	rli.match = false
 	if rli.sc.Scan() {
-		rli.number++
+		rli.lineNum++
 		rli.match = true
 		return true
 	}
@@ -57,8 +57,8 @@ func (rli *readerLiner) Match() bool {
 	return rli.match
 }
 
-func (rli *readerLiner) Number() int {
-	return rli.number
+func (rli *readerLiner) LineNum() int {
+	return rli.lineNum
 }
 
 // MatchRule for NewRuleLiner
@@ -71,7 +71,7 @@ type ruleLiner struct {
 }
 
 // NewRuleLiner returns new, rule-based Liner
-func NewRuleLiner(li Liner, rule MatchRule) Liner {
+func NewRuled(li Liner, rule MatchRule) Liner {
 	return Liner(&ruleLiner{
 		Liner: li,
 		rule:  rule,
@@ -95,7 +95,7 @@ type onlyMatchLiner struct {
 }
 
 // NewOnlyMatchLiner returns new Liner.
-func NewOnlyMatchLiner(li Liner) Liner {
+func NewOnlyMatch(li Liner) Liner {
 	return Liner(&onlyMatchLiner{
 		Liner: li,
 	})
@@ -113,14 +113,14 @@ func (omli *onlyMatchLiner) Scan() bool {
 
 // info Liner info.
 type info struct {
-	Text   string
-	Number int
-	Match  bool
+	Text    string
+	LineNum int
+	Match   bool
 }
 
 // UpdateInfo updates an Info, reflecting current state of a Liner.
 func updateInfo(info *info, li Liner) {
-	info.Text, info.Number, info.Match = li.Text(), li.Number(), li.Match()
+	info.Text, info.LineNum, info.Match = li.Text(), li.LineNum(), li.Match()
 }
 
 // LastLiner knows if the line is the last one.
@@ -138,7 +138,7 @@ type lastLiner struct {
 }
 
 // NewLastLiner creates a new LastLiner from liner.
-func NewLastLiner(li Liner) LastLiner {
+func NewLast(li Liner) LastLiner {
 	return LastLiner(&lastLiner{
 		Liner:    li,
 		info:     &info{},
@@ -166,8 +166,8 @@ func (lli *lastLiner) Text() string {
 	return lli.info.Text
 }
 
-func (lli *lastLiner) Number() int {
-	return lli.info.Number
+func (lli *lastLiner) LineNum() int {
+	return lli.info.LineNum
 }
 func (lli *lastLiner) Match() bool {
 	return lli.info.Match

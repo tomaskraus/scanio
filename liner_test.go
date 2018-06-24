@@ -9,14 +9,14 @@ import (
 
 type result struct {
 	canParse bool
-	number   int
+	lineNum  int
 	match    bool
 	text     string
 }
 
 type resultL struct {
 	canParse bool
-	number   int
+	lineNum  int
 	match    bool
 	text     string
 	last     bool
@@ -25,7 +25,7 @@ type resultL struct {
 func TestReaderLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewLiner(f)
+	li := New(f)
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -34,9 +34,9 @@ func TestReaderLinerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -50,7 +50,7 @@ func TestLinerFile(t *testing.T) {
 		return
 	}
 
-	li := NewLiner(f)
+	li := New(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -69,9 +69,9 @@ func TestLinerFile(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -86,7 +86,7 @@ func TestRuleLiner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	li := NewRuleLiner(NewLiner(f), func(in string) bool {
+	li := NewRuled(New(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -107,9 +107,9 @@ func TestRuleLiner(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -118,7 +118,7 @@ func TestRuleLiner(t *testing.T) {
 func TestRuleLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewRuleLiner(NewLiner(f), func(in string) bool {
+	li := NewRuled(New(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -128,9 +128,9 @@ func TestRuleLinerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -143,7 +143,7 @@ func TestRuleLinerFull(t *testing.T) {
 		return
 	}
 
-	li := NewRuleLiner(NewLiner(f), func(in string) bool {
+	li := NewRuled(New(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -164,9 +164,9 @@ func TestRuleLinerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -175,7 +175,7 @@ func TestRuleLinerFull(t *testing.T) {
 func TestOnlyMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewOnlyMatchLiner(NewLiner(f))
+	li := NewOnlyMatch(New(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -183,9 +183,9 @@ func TestOnlyMatchLinerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -198,7 +198,7 @@ func TestOnlyMatchLinerFull(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatchLiner(NewLiner(f))
+	li := NewOnlyMatch(New(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -217,9 +217,9 @@ func TestOnlyMatchLinerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -233,7 +233,7 @@ func TestOnlyMatchLinerRuled(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatchLiner(NewRuleLiner(NewLiner(f), func(in string) bool {
+	li := NewOnlyMatch(NewRuled(New(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	}))
 
@@ -245,9 +245,9 @@ func TestOnlyMatchLinerRuled(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -256,7 +256,7 @@ func TestOnlyMatchLinerRuled(t *testing.T) {
 func TestLastLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewLastLiner(NewLiner(f))
+	li := NewLast(New(f))
 
 	expected := []resultL{
 		{false, 0, false, "", true},
@@ -264,9 +264,9 @@ func TestLastLinerEmpty(t *testing.T) {
 		{false, 0, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Number(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -274,7 +274,7 @@ func TestLastLinerEmpty(t *testing.T) {
 func TestLastLinerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
-	li := NewLastLiner(NewLiner(f))
+	li := NewLast(New(f))
 
 	expected := []resultL{
 		{true, 1, true, "one line", true},
@@ -282,9 +282,9 @@ func TestLastLinerOneLine(t *testing.T) {
 		{false, 1, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Number(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -298,7 +298,7 @@ func TestLastLinerFull(t *testing.T) {
 		return
 	}
 
-	li := NewLastLiner(NewLiner(f))
+	li := NewLast(New(f))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", false},
@@ -317,9 +317,9 @@ func TestLastLinerFull(t *testing.T) {
 		{false, 11, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Number(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.number || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -328,19 +328,19 @@ func TestLastLinerFull(t *testing.T) {
 func ExampleNewRuleLiner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	li := NewLastLiner(
-		NewOnlyMatchLiner(
-			NewRuleLiner(
-				NewLiner(f),
+	li := NewLast(
+		NewOnlyMatch(
+			NewRuled(
+				New(f),
 				func(s string) bool {
 					return strings.HasPrefix(s, "#")
 				})))
 
 	for li.Scan() {
 		if li.Last() {
-			fmt.Printf("(%d, %q).", li.Number(), li.Text())
+			fmt.Printf("(%d, %q).", li.LineNum(), li.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", li.Number(), li.Text())
+			fmt.Printf("(%d, %q), ", li.LineNum(), li.Text())
 		}
 	}
 	// Output:
