@@ -22,7 +22,6 @@ type Liner interface {
 // reader Liner
 type readerLiner struct {
 	sc      *bufio.Scanner
-	text    string
 	match   bool
 	lineNum int
 }
