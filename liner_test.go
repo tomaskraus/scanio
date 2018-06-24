@@ -325,7 +325,7 @@ func TestLastLinerFull(t *testing.T) {
 	}
 }
 
-func ExampleNewRuleLiner() {
+func ExampleNewRuled() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
 	li := NewLast(
