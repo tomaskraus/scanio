@@ -90,6 +90,27 @@ func (rli *ruleLiner) Match() bool {
 	return rli.matchr
 }
 
+type onlyMatchLiner struct {
+	Liner
+}
+
+// NewOnlyMatchLiner returns new Liner.
+func NewOnlyMatchLiner(li Liner) Liner {
+	return Liner(&onlyMatchLiner{
+		Liner: li,
+	})
+}
+
+func (omli *onlyMatchLiner) Scan() bool {
+	for omli.Liner.Scan() {
+		if omli.Liner.Match() {
+			return true
+		}
+		continue
+	}
+	return false
+}
+
 // info Liner info.
 type info struct {
 	Text   string

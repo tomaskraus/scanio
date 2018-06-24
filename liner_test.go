@@ -172,6 +172,87 @@ func TestRuleLinerFull(t *testing.T) {
 	}
 }
 
+func TestOnlyMatchLinerEmpty(t *testing.T) {
+	f := strings.NewReader("")
+
+	li := NewOnlyMatchLiner(NewLiner(f))
+
+	expected := []result{
+		{false, 0, false, ""},
+		{false, 0, false, ""},
+		{false, 0, false, ""},
+	}
+	for _, v := range expected {
+		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+
+		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		}
+	}
+}
+func TestOnlyMatchLinerFull(t *testing.T) {
+	f, err := os.Open("assets/simpleFile.txt")
+	defer f.Close()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	li := NewOnlyMatchLiner(NewLiner(f))
+
+	expected := []result{
+		{true, 1, true, "this is a simple file"},
+		{true, 2, true, "next line is empty"},
+		{true, 3, true, ""},
+		{true, 4, true, "next line has two spaces"},
+		{true, 5, true, "  "},
+		{true, 6, true, "# bash-like comment"},
+		{true, 7, true, "line with two trailing spaces  "},
+		{true, 8, true, " line with one leading space"},
+		{true, 9, true, " line with one leading and one trailing space "},
+		{true, 10, true, "# bash-like comment 2 "},
+		{true, 11, true, "last line"},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+	}
+	for _, v := range expected {
+		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+
+		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		}
+	}
+}
+
+func TestOnlyMatchLinerRuled(t *testing.T) {
+	f, err := os.Open("assets/simpleFile.txt")
+	defer f.Close()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	li := NewOnlyMatchLiner(NewRuleLiner(NewLiner(f), func(in string) bool {
+		return strings.HasPrefix(in, "#")
+	}))
+
+	expected := []result{
+		{true, 6, true, "# bash-like comment"},
+		{true, 10, true, "# bash-like comment 2 "},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+	}
+	for _, v := range expected {
+		res, num, match, text := li.Scan(), li.Number(), li.Match(), li.Text()
+
+		if res != v.canParse || num != v.number || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		}
+	}
+}
+
 func TestLastLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
@@ -245,21 +326,23 @@ func TestLastLinerFull(t *testing.T) {
 }
 
 func ExampleNewRuleLiner() {
-	f := strings.NewReader("\n# comment 1\n  \n#comment2")
+	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	li := NewRuleLiner(
-		NewLiner(f),
-		func(s string) bool {
-			return strings.HasPrefix(s, "#")
-		},
-	)
+	li := NewLastLiner(
+		NewOnlyMatchLiner(
+			NewRuleLiner(
+				NewLiner(f),
+				func(s string) bool {
+					return strings.HasPrefix(s, "#")
+				})))
 
 	for li.Scan() {
-		if li.Match() {
-			fmt.Printf("%d, %q\n", li.Number(), li.Text())
+		if li.Last() {
+			fmt.Printf("(%d, %q).", li.Number(), li.Text())
+		} else {
+			fmt.Printf("(%d, %q), ", li.Number(), li.Text())
 		}
 	}
 	// Output:
-	// 2, "# comment 1"
-	// 4, "#comment2"
+	// (2, "# comment 1"), (4, "#comment2").
 }
