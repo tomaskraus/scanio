@@ -247,10 +247,12 @@ func TestLastLinerFull(t *testing.T) {
 func ExampleNewRuleLiner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2")
 
-	li := NewRuleLiner(NewLiner(f),
+	li := NewRuleLiner(
+		NewLiner(f),
 		func(s string) bool {
 			return strings.HasPrefix(s, "#")
-		})
+		},
+	)
 
 	for li.Scan() {
 		if li.Match() {
