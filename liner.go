@@ -90,28 +90,6 @@ func (rli *ruleLiner) Match() bool {
 	return rli.matchr
 }
 
-type filterLiner struct {
-	Liner
-}
-
-// NewFilterLiner returns only lines that the underlying Liner matches
-func NewFilterLiner(li Liner) Liner {
-	return Liner(&filterLiner{
-		li,
-	})
-}
-
-func (mli *filterLiner) Scan() bool {
-	for mli.Liner.Scan() {
-		if mli.Liner.Match() != true {
-			continue
-		} else {
-			return true
-		}
-	}
-	return false
-}
-
 // info Liner info.
 type info struct {
 	Text   string
