@@ -27,11 +27,12 @@ type readerLiner struct {
 	lineNum int
 }
 
-// NewLiner scans from an io.Reader
+// New creates a new Liner, using a scanner.
 func New(r io.Reader) Liner {
 	return NewFromScanner(bufio.NewScanner(r))
 }
 
+// NewFromScanner creates a new Liner, using a scanner.
 func NewFromScanner(sc *bufio.Scanner) Liner {
 	return Liner(&readerLiner{
 		sc: sc,
@@ -64,7 +65,7 @@ func (rli *readerLiner) LineNum() int {
 	return rli.lineNum
 }
 
-// MatchRule for NewRuleLiner
+// MatchRule for NewRuled.
 type MatchRule func(input string) bool
 
 type ruleLiner struct {
@@ -73,7 +74,7 @@ type ruleLiner struct {
 	matchr bool
 }
 
-// NewRuleLiner returns new, rule-based Liner
+// NewRuled returns new, rule-based Liner.
 func NewRuled(li Liner, rule MatchRule) Liner {
 	return Liner(&ruleLiner{
 		Liner: li,
@@ -97,7 +98,7 @@ type onlyMatchLiner struct {
 	Liner
 }
 
-// NewOnlyMatchLiner returns new Liner.
+// NewOnlyMatch returns new Liner.
 func NewOnlyMatch(li Liner) Liner {
 	return Liner(&onlyMatchLiner{
 		Liner: li,
@@ -142,12 +143,12 @@ type info struct {
 	Match   bool
 }
 
-// UpdateInfo updates an Info, reflecting current state of a Liner.
+// updateInfo updates an Info, reflecting current state of a Liner.
 func updateInfo(info *info, li Liner) {
 	info.Text, info.LineNum, info.Match = li.Text(), li.LineNum(), li.Match()
 }
 
-// LastLiner knows if the line is the last one.
+// LastLiner knows if the current line is the last one.
 type LastLiner interface {
 	Liner
 	Last() bool
@@ -161,7 +162,7 @@ type lastLiner struct {
 	previousScan, currentScan bool
 }
 
-// NewLastLiner creates a new LastLiner from liner.
+// NewLast creates a new LastLiner using a Liner.
 func NewLast(li Liner) LastLiner {
 	return LastLiner(&lastLiner{
 		Liner:    li,
@@ -201,7 +202,7 @@ func (lli *lastLiner) Last() bool {
 	return lli.currentScan == false
 }
 
-// NewFilter
+// NewFilter creates a Liner that produces only lines matched by a rule provided.
 func NewFilter(li Liner, rule MatchRule) Liner {
 	return NewOnlyMatch(NewRuled(li, rule))
 }
