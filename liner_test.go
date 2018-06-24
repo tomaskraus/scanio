@@ -347,6 +347,27 @@ func ExampleNewRuled() {
 	// (2, "# comment 1"), (4, "#comment2").
 }
 
+func ExampleNewFilter() {
+	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
+
+	li := NewLast(
+		NewFilter(
+			New(f),
+			func(s string) bool {
+				return strings.HasPrefix(s, "#")
+			}))
+
+	for li.Scan() {
+		if li.Last() {
+			fmt.Printf("(%d, %q).", li.LineNum(), li.Text())
+		} else {
+			fmt.Printf("(%d, %q), ", li.LineNum(), li.Text())
+		}
+	}
+	// Output:
+	// (2, "# comment 1"), (4, "#comment2").
+}
+
 func TestOnlyNotMatchLinerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 

@@ -196,3 +196,8 @@ func (lli *lastLiner) Match() bool {
 func (lli *lastLiner) Last() bool {
 	return lli.currentScan == false
 }
+
+// NewFilter
+func NewFilter(li Liner, rule MatchRule) Liner {
+	return NewOnlyMatch(NewRuled(li, rule))
+}
