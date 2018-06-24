@@ -1,6 +1,7 @@
 package liner
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -295,4 +296,21 @@ func TestLastLinerFilter(t *testing.T) {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
+}
+
+func ExampleNewRuleLiner() {
+	f := strings.NewReader("\n# comment 1\n  \n#comment2")
+
+	li := NewRuleLiner(NewLiner(f), func(s string) bool {
+		return strings.HasPrefix(s, "#")
+	})
+
+	for li.Scan() {
+		if li.Match() {
+			fmt.Printf("%d, %q\n", li.Number(), li.Text())
+		}
+	}
+	// Output:
+	// 2, "# comment 1"
+	// 4, "#comment2"
 }
