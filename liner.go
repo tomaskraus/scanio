@@ -29,8 +29,12 @@ type readerLiner struct {
 
 // NewLiner scans from an io.Reader
 func New(r io.Reader) Liner {
+	return NewFromScanner(bufio.NewScanner(r))
+}
+
+func NewFromScanner(sc *bufio.Scanner) Liner {
 	return Liner(&readerLiner{
-		sc: bufio.NewScanner(r),
+		sc: sc,
 	})
 }
 
