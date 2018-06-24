@@ -15,6 +15,7 @@ type Liner interface {
 	Scan() bool
 	Err() error
 	Text() string
+	Bytes() []byte
 	Match() bool  // true if a line matches Liner's MatchRule
 	LineNum() int // number of a current line
 }
@@ -54,6 +55,10 @@ func (rli *readerLiner) Err() error {
 
 func (rli *readerLiner) Text() string {
 	return rli.sc.Text()
+}
+
+func (rli *readerLiner) Bytes() []byte {
+	return rli.sc.Bytes()
 }
 
 func (rli *readerLiner) Match() bool {
@@ -138,13 +143,25 @@ func (omli *onlyNotMatchLiner) Scan() bool {
 // info Liner info.
 type info struct {
 	Text    string
+	Bytes   []byte
 	LineNum int
 	Match   bool
 }
 
+const infoBufferCap = 1024
+
+func newInfo(bufferCap int) *info {
+	i := info{}
+	i.Bytes = make([]byte, bufferCap)
+	return &i
+}
+
 // updateInfo updates an Info, reflecting current state of a Liner.
-func updateInfo(info *info, li Liner) {
+func (info *info) update(li Liner) {
 	info.Text, info.LineNum, info.Match = li.Text(), li.LineNum(), li.Match()
+	// copy slices
+	length := copy(info.Bytes, li.Bytes())
+	info.Bytes = info.Bytes[:length]
 }
 
 // LastLiner knows if the current line is the last one.
@@ -165,8 +182,8 @@ type lastLiner struct {
 func NewLast(li Liner) LastLiner {
 	return LastLiner(&lastLiner{
 		Liner:    li,
-		info:     &info{},
-		nextInfo: &info{},
+		info:     newInfo(infoBufferCap),
+		nextInfo: newInfo(infoBufferCap),
 		last:     false,
 	})
 }
@@ -174,20 +191,24 @@ func NewLast(li Liner) LastLiner {
 func (lli *lastLiner) Scan() bool {
 	if !lli.started {
 		lli.scan = lli.Liner.Scan()
-		updateInfo(lli.info, lli.Liner)
+		lli.info.update(lli.Liner)
 		lli.nextScan = lli.Liner.Scan()
-		updateInfo(lli.nextInfo, lli.Liner)
+		lli.nextInfo.update(lli.Liner)
 		lli.started = true
 		return lli.scan
 	}
 	lli.info, lli.nextInfo = lli.nextInfo, lli.info
 	lli.scan, lli.nextScan = lli.nextScan, lli.Liner.Scan()
-	updateInfo(lli.nextInfo, lli.Liner)
+	lli.nextInfo.update(lli.Liner)
 	return lli.scan
 }
 
 func (lli *lastLiner) Text() string {
 	return lli.info.Text
+}
+
+func (lli *lastLiner) Bytes() []byte {
+	return lli.info.Bytes
 }
 
 func (lli *lastLiner) LineNum() int {
