@@ -110,6 +110,27 @@ func (omli *onlyMatchLiner) Scan() bool {
 	return false
 }
 
+type onlyNotMatchLiner struct {
+	Liner
+}
+
+// NewOnlyNotMatch returns new Liner.
+func NewOnlyNotMatch(li Liner) Liner {
+	return Liner(&onlyNotMatchLiner{
+		Liner: li,
+	})
+}
+
+func (omli *onlyNotMatchLiner) Scan() bool {
+	for omli.Liner.Scan() {
+		if omli.Liner.Match() {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
 // info Liner info.
 type info struct {
 	Text    string
