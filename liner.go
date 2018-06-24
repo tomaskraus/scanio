@@ -156,10 +156,10 @@ type LastLiner interface {
 
 type lastLiner struct {
 	Liner
-	info, nextInfo            *info
-	last                      bool // true if the current line is the last one
-	started                   bool
-	previousScan, currentScan bool
+	info, nextInfo *info
+	scan, nextScan bool
+	last           bool // true if the current line is the last one
+	started        bool
 }
 
 // NewLast creates a new LastLiner using a Liner.
@@ -174,17 +174,17 @@ func NewLast(li Liner) LastLiner {
 
 func (lli *lastLiner) Scan() bool {
 	if !lli.started {
-		lli.previousScan = lli.Liner.Scan()
+		lli.scan = lli.Liner.Scan()
 		updateInfo(lli.info, lli.Liner)
-		lli.currentScan = lli.Liner.Scan()
+		lli.nextScan = lli.Liner.Scan()
 		updateInfo(lli.nextInfo, lli.Liner)
 		lli.started = true
-		return lli.previousScan
+		return lli.scan
 	}
 	lli.info, lli.nextInfo = lli.nextInfo, lli.info
-	lli.previousScan, lli.currentScan = lli.currentScan, lli.Liner.Scan()
+	lli.scan, lli.nextScan = lli.nextScan, lli.Liner.Scan()
 	updateInfo(lli.nextInfo, lli.Liner)
-	return lli.previousScan
+	return lli.scan
 }
 
 func (lli *lastLiner) Text() string {
@@ -199,7 +199,7 @@ func (lli *lastLiner) Match() bool {
 }
 
 func (lli *lastLiner) Last() bool {
-	return lli.currentScan == false
+	return lli.nextScan == false
 }
 
 // NewFilter creates a Liner that produces only lines matched by a rule provided.
