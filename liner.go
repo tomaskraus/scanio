@@ -40,12 +40,12 @@ func NewFromScanner(sc *bufio.Scanner) Liner {
 }
 
 func (rli *readerLiner) Scan() bool {
-	rli.match = false
 	if rli.sc.Scan() {
 		rli.lineNum++
 		rli.match = true
 		return true
 	}
+	rli.match = false
 	return false
 }
 
