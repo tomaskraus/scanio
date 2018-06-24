@@ -15,6 +15,7 @@ type Liner interface {
 	Scan() bool
 	Err() error
 	Text() string
+	Bytes() []byte
 	Match() bool  // true if a line matches Liner's MatchRule
 	LineNum() int // number of a current line
 }
@@ -55,6 +56,10 @@ func (rli *readerLiner) Err() error {
 
 func (rli *readerLiner) Text() string {
 	return rli.sc.Text()
+}
+
+func (rli *readerLiner) Bytes() []byte {
+	return rli.sc.Bytes()
 }
 
 func (rli *readerLiner) Match() bool {
@@ -139,6 +144,7 @@ func (omli *onlyNotMatchLiner) Scan() bool {
 // info Liner info.
 type info struct {
 	Text    string
+	Bytes   []byte
 	LineNum int
 	Match   bool
 }
@@ -146,6 +152,11 @@ type info struct {
 // updateInfo updates an Info, reflecting current state of a Liner.
 func updateInfo(info *info, li Liner) {
 	info.Text, info.LineNum, info.Match = li.Text(), li.LineNum(), li.Match()
+	// info.Bytes = li.Bytes()
+	// copy slices
+	origin := li.Bytes()
+	info.Bytes = make([]byte, len(origin))
+	copy(info.Bytes, origin)
 }
 
 // LastLiner knows if the current line is the last one.
@@ -189,6 +200,10 @@ func (lli *lastLiner) Scan() bool {
 
 func (lli *lastLiner) Text() string {
 	return lli.info.Text
+}
+
+func (lli *lastLiner) Bytes() []byte {
+	return lli.info.Bytes
 }
 
 func (lli *lastLiner) LineNum() int {
