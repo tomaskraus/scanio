@@ -7,10 +7,8 @@ import (
 	"io"
 )
 
-// Scanner interface for reading text lines.
-// Scan, Err and Text are methods similar to the bufio.Scanner.
-// Provides an additional information - current line number etc.
-// Text returns current line content
+// Scanner interface reflects the set of methods of the bufio.Scanner.
+// Adds two more methods: number of the tokens scanned and match status.
 type Scanner interface {
 	Buffer(buf []byte, max int)
 	Bytes() []byte
@@ -19,8 +17,8 @@ type Scanner interface {
 	Split(split bufio.SplitFunc)
 	Text() string
 
-	Match() bool // true if a line matches Scanner's MatchRule
-	Num() int    // number of a current line
+	Match() bool // true if a token matches Scanner's MatchRule
+	Num() int    // number of a current token
 }
 
 // reader Scanner
@@ -30,7 +28,8 @@ type readerScanner struct {
 	num   int
 }
 
-// NewScanner creates a new Scanner, using a scanner.
+// NewScanner creates a new Scanner using a Reader.
+// This Scanner can be used instead of bufio.Scanner
 func NewScanner(r io.Reader) Scanner {
 	return Scanner(&readerScanner{
 		scn: bufio.NewScanner(r),
@@ -174,7 +173,8 @@ func (info *info) update(scn Scanner) {
 	info.Bytes = info.Bytes[:length]
 }
 
-// LastScanner knows if the current line is the last one.
+// LastScanner can tell if the current token is the last one.
+// Does the one token forward-read to achieve this.
 type LastScanner interface {
 	Scanner
 	Last() bool
@@ -184,12 +184,12 @@ type lastScanner struct {
 	Scanner
 	info, nextInfo  *info
 	scan, nextScan  bool
-	last            bool // true if the current line is the last one
+	last            bool
 	started         bool
 	bufSize, bufCap int
 }
 
-// NewLastScanner creates a new LastScanner using a Scanner.
+// NewLastScanner creates a new LastScanner.
 func NewLastScanner(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
 		Scanner: scn,
@@ -246,7 +246,7 @@ func (lsc *lastScanner) Last() bool {
 	return lsc.nextScan == false
 }
 
-// NewFilterScanner creates a Scanner that produces only lines matched by a rule provided.
+// NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
 func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
 	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
 }
