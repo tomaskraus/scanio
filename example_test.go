@@ -1,18 +1,20 @@
-package scanio
+package scanio_test
 
 import (
 	"bufio"
 	"fmt"
 	"strings"
+
+	"github.com/tomaskraus/scanio"
 )
 
 func Example() {
 	r := strings.NewReader("One two three")
-	sc := NewScanner(r)
+	sc := scanio.NewScanner(r)
 	sc.Split(bufio.ScanWords)
 
 	// chain the next scanner
-	lsc := NewLastScanner(sc)
+	lsc := scanio.NewLastScanner(sc)
 
 	for lsc.Scan() {
 		if lsc.Last() {
