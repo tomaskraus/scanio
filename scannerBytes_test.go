@@ -2,28 +2,26 @@ package scanio
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
+	"strings"
 )
 
 func Example() {
-	r := bytes.NewReader([]byte("abcd ef gh"))
+	r := strings.NewReader("One two three")
 	sc := NewScanner(r)
 	sc.Split(bufio.ScanWords)
 
-	sc = NewLastScanner(sc)
-	buf := make([]byte, 5)
-	sc.Buffer(buf, 2)
+	// chain the next scanner
+	lsc := NewLastScanner(sc)
 
-	scanned := false
-	for scanned = sc.Scan(); scanned == true; scanned = sc.Scan() {
-		fmt.Printf("%v, %v, %v, %q\n", scanned, sc.Num(), sc.Match(), sc.Bytes())
+	for lsc.Scan() {
+		if lsc.Last() {
+			fmt.Printf("%v:%q!", lsc.Num(), lsc.Text())
+		} else {
+			fmt.Printf("%v:%q, ", lsc.Num(), lsc.Text())
+		}
 	}
-	fmt.Printf("%v, %v, %v, %q\n", scanned, sc.Num(), sc.Match(), sc.Bytes())
 
 	// Output:
-	// true, 1, true, "abcd"
-	// true, 2, true, "ef"
-	// true, 3, true, "gh"
-	// false, 3, false, ""
+	// 1:"One", 2:"two", 3:"three"!
 }
