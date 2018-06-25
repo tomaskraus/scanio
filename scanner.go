@@ -12,19 +12,22 @@ import (
 // Provides an additional information - current line number etc.
 // Text returns current line content
 type Scanner interface {
-	Scan() bool
-	Err() error
-	Text() string
+	Buffer(buf []byte, max int)
 	Bytes() []byte
-	Match() bool  // true if a line matches Scanner's MatchRule
-	LineNum() int // number of a current line
+	Err() error
+	Scan() bool
+	Split(split bufio.SplitFunc)
+	Text() string
+
+	Match() bool // true if a line matches Scanner's MatchRule
+	Num() int    // number of a current line
 }
 
 // reader Scanner
 type readerScanner struct {
-	sc      *bufio.Scanner
-	match   bool
-	lineNum int
+	sc    *bufio.Scanner
+	match bool
+	num   int
 }
 
 // NewScanner creates a new Scanner, using a scanner.
@@ -35,12 +38,12 @@ func NewScanner(r io.Reader) Scanner {
 }
 
 func (sc *readerScanner) Buffer(buf []byte, max int) {
-
+	sc.sc.Buffer(buf, max)
 }
 
 func (sc *readerScanner) Scan() bool {
 	if sc.sc.Scan() {
-		sc.lineNum++
+		sc.num++
 		sc.match = true
 		return true
 	}
@@ -50,6 +53,10 @@ func (sc *readerScanner) Scan() bool {
 
 func (sc *readerScanner) Err() error {
 	return sc.sc.Err()
+}
+
+func (sc *readerScanner) Split(split bufio.SplitFunc) {
+	sc.sc.Split(split)
 }
 
 func (sc *readerScanner) Text() string {
@@ -64,8 +71,8 @@ func (sc *readerScanner) Match() bool {
 	return sc.match
 }
 
-func (sc *readerScanner) LineNum() int {
-	return sc.lineNum
+func (sc *readerScanner) Num() int {
+	return sc.num
 }
 
 // MatchRule for NewRuled.
@@ -141,10 +148,10 @@ func (omli *onlyNotMatchScanner) Scan() bool {
 
 // info Scanner info.
 type info struct {
-	Text    string
-	Bytes   []byte
-	LineNum int
-	Match   bool
+	Text  string
+	Bytes []byte
+	Num   int
+	Match bool
 }
 
 const infoBufferCap = 1024
@@ -157,7 +164,7 @@ func newInfo(bufferCap int) *info {
 
 // updateInfo updates an Info, reflecting current state of a Scanner.
 func (info *info) update(li Scanner) {
-	info.Text, info.LineNum, info.Match = li.Text(), li.LineNum(), li.Match()
+	info.Text, info.Num, info.Match = li.Text(), li.Num(), li.Match()
 	// copy slices
 	length := copy(info.Bytes, li.Bytes())
 	info.Bytes = info.Bytes[:length]
@@ -210,8 +217,8 @@ func (lli *lastScanner) Bytes() []byte {
 	return lli.info.Bytes
 }
 
-func (lli *lastScanner) LineNum() int {
-	return lli.info.LineNum
+func (lli *lastScanner) Num() int {
+	return lli.info.Num
 }
 func (lli *lastScanner) Match() bool {
 	return lli.info.Match

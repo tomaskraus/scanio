@@ -9,14 +9,14 @@ import (
 
 type result struct {
 	canParse bool
-	lineNum  int
+	num      int
 	match    bool
 	text     string
 }
 
 type resultL struct {
 	canParse bool
-	lineNum  int
+	num      int
 	match    bool
 	text     string
 	last     bool
@@ -58,9 +58,9 @@ func TestReaderScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -93,9 +93,9 @@ func TestScannerFile(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -131,9 +131,9 @@ func TestRuleScanner(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -152,9 +152,9 @@ func TestRuleScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -188,9 +188,9 @@ func TestRuleScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -207,9 +207,9 @@ func TestOnlyMatchScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -241,9 +241,9 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -269,9 +269,9 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -288,9 +288,9 @@ func TestLastScannerEmpty(t *testing.T) {
 		{false, 0, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -306,9 +306,9 @@ func TestLastScannerOneLine(t *testing.T) {
 		{false, 1, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -341,9 +341,9 @@ func TestLastScannerFull(t *testing.T) {
 		{false, 11, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.LineNum(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text || last != v.last {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
 		}
 	}
@@ -362,9 +362,9 @@ func ExampleNewRuled() {
 
 	for li.Scan() {
 		if li.Last() {
-			fmt.Printf("(%d, %q).", li.LineNum(), li.Text())
+			fmt.Printf("(%d, %q).", li.Num(), li.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", li.LineNum(), li.Text())
+			fmt.Printf("(%d, %q), ", li.Num(), li.Text())
 		}
 	}
 	// Output:
@@ -383,9 +383,9 @@ func ExampleNewFilter() {
 
 	for li.Scan() {
 		if li.Last() {
-			fmt.Printf("(%d, %q).", li.LineNum(), li.Text())
+			fmt.Printf("(%d, %q).", li.Num(), li.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", li.LineNum(), li.Text())
+			fmt.Printf("(%d, %q), ", li.Num(), li.Text())
 		}
 	}
 	// Output:
@@ -403,9 +403,9 @@ func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -426,9 +426,9 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
@@ -461,9 +461,9 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
