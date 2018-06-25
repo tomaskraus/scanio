@@ -13,7 +13,7 @@ func Example() {
 	sc.Buffer(buf, 2)
 	sc.Split(bufio.ScanWords)
 
-	sc = NewLast(sc)
+	sc = NewLastScanner(sc)
 
 	scanned := false
 	for scanned = sc.Scan(); scanned == true; scanned = sc.Scan() {

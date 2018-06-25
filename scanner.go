@@ -75,7 +75,7 @@ func (sc *readerScanner) Num() int {
 	return sc.num
 }
 
-// MatchRule for NewRuled.
+// MatchRule for NewRuleScanner.
 type MatchRule func(input string) bool
 
 type ruleScanner struct {
@@ -84,8 +84,8 @@ type ruleScanner struct {
 	matchr bool
 }
 
-// NewRuled returns new, rule-based Scanner.
-func NewRuled(scn Scanner, rule MatchRule) Scanner {
+// NewRuleScanner returns new, rule-based Scanner.
+func NewRuleScanner(scn Scanner, rule MatchRule) Scanner {
 	return Scanner(&ruleScanner{
 		Scanner: scn,
 		rule:    rule,
@@ -108,8 +108,8 @@ type onlyMatchScanner struct {
 	Scanner
 }
 
-// NewOnlyMatch returns new Scanner.
-func NewOnlyMatch(scn Scanner) Scanner {
+// NewOnlyMatchScanner returns new Scanner.
+func NewOnlyMatchScanner(scn Scanner) Scanner {
 	return Scanner(&onlyMatchScanner{
 		Scanner: scn,
 	})
@@ -129,8 +129,8 @@ type onlyNotMatchScanner struct {
 	Scanner
 }
 
-// NewOnlyNotMatch returns new Scanner.
-func NewOnlyNotMatch(scn Scanner) Scanner {
+// NewOnlyNotMatchScanner returns new Scanner.
+func NewOnlyNotMatchScanner(scn Scanner) Scanner {
 	return Scanner(&onlyNotMatchScanner{
 		Scanner: scn,
 	})
@@ -184,8 +184,8 @@ type lastScanner struct {
 	started        bool
 }
 
-// NewLast creates a new LastScanner using a Scanner.
-func NewLast(scn Scanner) LastScanner {
+// NewLastScanner creates a new LastScanner using a Scanner.
+func NewLastScanner(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
 		Scanner:  scn,
 		info:     newInfo(infoBufferCap),
@@ -228,7 +228,7 @@ func (lsc *lastScanner) Last() bool {
 	return lsc.nextScan == false
 }
 
-// NewFilter creates a Scanner that produces only lines matched by a rule provided.
-func NewFilter(scn Scanner, rule MatchRule) Scanner {
-	return NewOnlyMatch(NewRuled(scn, rule))
+// NewFilterScanner creates a Scanner that produces only lines matched by a rule provided.
+func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
+	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
 }

@@ -18,7 +18,7 @@ func Example() {
 
 	// An artificial input source.
 	const input = "1234 5678 1234567901234567890"
-	scanner := scanio.NewLast(scanio.NewScanner(strings.NewReader(input)))
+	scanner := scanio.NewLastScanner(scanio.NewScanner(strings.NewReader(input)))
 	// Create a custom split function by wrapping the existing ScanWords function.
 	split := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		advance, token, err = bufio.ScanWords(data, atEOF)
