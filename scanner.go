@@ -1,4 +1,4 @@
-// Package scanio provides se of text-line scanning utilities.
+// Package scanio provides bufio.Scanner wrappers with filtering, chaining and last-token ahead reading.
 //
 package scanio
 
