@@ -6,13 +6,6 @@ import (
 	"fmt"
 )
 
-type resultB struct {
-	canParse bool
-	lineNum  int
-	match    bool
-	bytes    []byte
-}
-
 func Example() {
 	r := bytes.NewReader([]byte("abcd ef gh"))
 	sc := NewScanner(r)
@@ -20,13 +13,13 @@ func Example() {
 	sc.Buffer(buf, 2)
 	sc.Split(bufio.ScanWords)
 
-	li := NewLast(sc)
+	sc = NewLast(sc)
 
-	scn := false
-	for scn = li.Scan(); scn == true; scn = li.Scan() {
-		fmt.Printf("%v, %v, %v, %q\n", scn, li.Num(), li.Match(), li.Bytes())
+	scanned := false
+	for scanned = sc.Scan(); scanned == true; scanned = sc.Scan() {
+		fmt.Printf("%v, %v, %v, %q\n", scanned, sc.Num(), sc.Match(), sc.Bytes())
 	}
-	fmt.Printf("%v, %v, %v, %q\n", scn, li.Num(), li.Match(), li.Bytes())
+	fmt.Printf("%v, %v, %v, %q\n", scanned, sc.Num(), sc.Match(), sc.Bytes())
 
 	// Output:
 	// true, 1, true, "abcd"

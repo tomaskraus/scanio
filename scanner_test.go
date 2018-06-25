@@ -25,8 +25,8 @@ type resultL struct {
 
 func TestScanWords(t *testing.T) {
 	f := strings.NewReader("This is example  ")
-	li := NewScanner(f)
-	li.Split(bufio.ScanWords)
+	scn := NewScanner(f)
+	scn.Split(bufio.ScanWords)
 
 	expected := []result{
 		{true, 1, true, "This"},
@@ -38,7 +38,7 @@ func TestScanWords(t *testing.T) {
 		{false, 3, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -49,7 +49,7 @@ func TestScanWords(t *testing.T) {
 func TestReaderScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewScanner(f)
+	scn := NewScanner(f)
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -58,7 +58,7 @@ func TestReaderScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -74,7 +74,7 @@ func TestScannerFile(t *testing.T) {
 		return
 	}
 
-	li := NewScanner(f)
+	scn := NewScanner(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -93,7 +93,7 @@ func TestScannerFile(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -110,7 +110,7 @@ func TestRuleScanner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	li := NewRuled(NewScanner(f), func(in string) bool {
+	scn := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -131,7 +131,7 @@ func TestRuleScanner(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -142,7 +142,7 @@ func TestRuleScanner(t *testing.T) {
 func TestRuleScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewRuled(NewScanner(f), func(in string) bool {
+	scn := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -152,7 +152,7 @@ func TestRuleScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -167,7 +167,7 @@ func TestRuleScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewRuled(NewScanner(f), func(in string) bool {
+	scn := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -188,7 +188,7 @@ func TestRuleScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -199,7 +199,7 @@ func TestRuleScannerFull(t *testing.T) {
 func TestOnlyMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewOnlyMatch(NewScanner(f))
+	scn := NewOnlyMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -207,7 +207,7 @@ func TestOnlyMatchScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -222,7 +222,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatch(NewScanner(f))
+	scn := NewOnlyMatch(NewScanner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -241,7 +241,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -257,7 +257,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatch(NewRuled(NewScanner(f), func(in string) bool {
+	scn := NewOnlyMatch(NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	}))
 
@@ -269,7 +269,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -280,7 +280,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 func TestLastScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewLast(NewScanner(f))
+	scn := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{false, 0, false, "", true},
@@ -288,7 +288,7 @@ func TestLastScannerEmpty(t *testing.T) {
 		{false, 0, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
@@ -298,7 +298,7 @@ func TestLastScannerEmpty(t *testing.T) {
 func TestLastScannerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
-	li := NewLast(NewScanner(f))
+	scn := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "one line", true},
@@ -306,7 +306,7 @@ func TestLastScannerOneLine(t *testing.T) {
 		{false, 1, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
@@ -322,7 +322,7 @@ func TestLastScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewLast(NewScanner(f))
+	scn := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", false},
@@ -341,7 +341,7 @@ func TestLastScannerFull(t *testing.T) {
 		{false, 11, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := li.Scan(), li.Num(), li.Match(), li.Text(), li.Last()
+		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
@@ -352,7 +352,7 @@ func TestLastScannerFull(t *testing.T) {
 func ExampleNewRuled() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	li := NewLast(
+	scn := NewLast(
 		NewOnlyMatch(
 			NewRuled(
 				NewScanner(f),
@@ -360,11 +360,11 @@ func ExampleNewRuled() {
 					return strings.HasPrefix(s, "#")
 				})))
 
-	for li.Scan() {
-		if li.Last() {
-			fmt.Printf("(%d, %q).", li.Num(), li.Text())
+	for scn.Scan() {
+		if scn.Last() {
+			fmt.Printf("(%d, %q).", scn.Num(), scn.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", li.Num(), li.Text())
+			fmt.Printf("(%d, %q), ", scn.Num(), scn.Text())
 		}
 	}
 	// Output:
@@ -374,18 +374,18 @@ func ExampleNewRuled() {
 func ExampleNewFilter() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	li := NewLast(
+	scn := NewLast(
 		NewFilter(
 			NewScanner(f),
 			func(s string) bool {
 				return strings.HasPrefix(s, "#")
 			}))
 
-	for li.Scan() {
-		if li.Last() {
-			fmt.Printf("(%d, %q).", li.Num(), li.Text())
+	for scn.Scan() {
+		if scn.Last() {
+			fmt.Printf("(%d, %q).", scn.Num(), scn.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", li.Num(), li.Text())
+			fmt.Printf("(%d, %q), ", scn.Num(), scn.Text())
 		}
 	}
 	// Output:
@@ -395,7 +395,7 @@ func ExampleNewFilter() {
 func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewOnlyNotMatch(NewScanner(f))
+	scn := NewOnlyNotMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -403,7 +403,7 @@ func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 		{false, 0, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -418,7 +418,7 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyNotMatch(NewScanner(f))
+	scn := NewOnlyNotMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 11, false, ""},
@@ -426,7 +426,7 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
@@ -442,7 +442,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyNotMatch(NewRuled(NewScanner(f), func(in string) bool {
+	scn := NewOnlyNotMatch(NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	}))
 
@@ -461,7 +461,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		{false, 11, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
+		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
 
 		if res != v.canParse || num != v.num || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})

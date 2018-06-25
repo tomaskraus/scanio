@@ -25,7 +25,7 @@ type Scanner interface {
 
 // reader Scanner
 type readerScanner struct {
-	sc    *bufio.Scanner
+	scn   *bufio.Scanner
 	match bool
 	num   int
 }
@@ -33,16 +33,16 @@ type readerScanner struct {
 // NewScanner creates a new Scanner, using a scanner.
 func NewScanner(r io.Reader) Scanner {
 	return Scanner(&readerScanner{
-		sc: bufio.NewScanner(r),
+		scn: bufio.NewScanner(r),
 	})
 }
 
 func (sc *readerScanner) Buffer(buf []byte, max int) {
-	sc.sc.Buffer(buf, max)
+	sc.scn.Buffer(buf, max)
 }
 
 func (sc *readerScanner) Scan() bool {
-	if sc.sc.Scan() {
+	if sc.scn.Scan() {
 		sc.num++
 		sc.match = true
 		return true
@@ -52,19 +52,19 @@ func (sc *readerScanner) Scan() bool {
 }
 
 func (sc *readerScanner) Err() error {
-	return sc.sc.Err()
+	return sc.scn.Err()
 }
 
 func (sc *readerScanner) Split(split bufio.SplitFunc) {
-	sc.sc.Split(split)
+	sc.scn.Split(split)
 }
 
 func (sc *readerScanner) Text() string {
-	return sc.sc.Text()
+	return sc.scn.Text()
 }
 
 func (sc *readerScanner) Bytes() []byte {
-	return sc.sc.Bytes()
+	return sc.scn.Bytes()
 }
 
 func (sc *readerScanner) Match() bool {
@@ -85,9 +85,9 @@ type ruleScanner struct {
 }
 
 // NewRuled returns new, rule-based Scanner.
-func NewRuled(li Scanner, rule MatchRule) Scanner {
+func NewRuled(scn Scanner, rule MatchRule) Scanner {
 	return Scanner(&ruleScanner{
-		Scanner: li,
+		Scanner: scn,
 		rule:    rule,
 	})
 }
@@ -109,15 +109,15 @@ type onlyMatchScanner struct {
 }
 
 // NewOnlyMatch returns new Scanner.
-func NewOnlyMatch(li Scanner) Scanner {
+func NewOnlyMatch(scn Scanner) Scanner {
 	return Scanner(&onlyMatchScanner{
-		Scanner: li,
+		Scanner: scn,
 	})
 }
 
-func (omli *onlyMatchScanner) Scan() bool {
-	for omli.Scanner.Scan() {
-		if omli.Scanner.Match() {
+func (scn *onlyMatchScanner) Scan() bool {
+	for scn.Scanner.Scan() {
+		if scn.Scanner.Match() {
 			return true
 		}
 		continue
@@ -130,15 +130,15 @@ type onlyNotMatchScanner struct {
 }
 
 // NewOnlyNotMatch returns new Scanner.
-func NewOnlyNotMatch(li Scanner) Scanner {
+func NewOnlyNotMatch(scn Scanner) Scanner {
 	return Scanner(&onlyNotMatchScanner{
-		Scanner: li,
+		Scanner: scn,
 	})
 }
 
-func (omli *onlyNotMatchScanner) Scan() bool {
-	for omli.Scanner.Scan() {
-		if omli.Scanner.Match() {
+func (scn *onlyNotMatchScanner) Scan() bool {
+	for scn.Scanner.Scan() {
+		if scn.Scanner.Match() {
 			continue
 		}
 		return true
@@ -163,10 +163,10 @@ func newInfo(bufferCap int) *info {
 }
 
 // updateInfo updates an Info, reflecting current state of a Scanner.
-func (info *info) update(li Scanner) {
-	info.Text, info.Num, info.Match = li.Text(), li.Num(), li.Match()
+func (info *info) update(scn Scanner) {
+	info.Text, info.Num, info.Match = scn.Text(), scn.Num(), scn.Match()
 	// copy slices
-	length := copy(info.Bytes, li.Bytes())
+	length := copy(info.Bytes, scn.Bytes())
 	info.Bytes = info.Bytes[:length]
 }
 
@@ -185,50 +185,50 @@ type lastScanner struct {
 }
 
 // NewLast creates a new LastScanner using a Scanner.
-func NewLast(li Scanner) LastScanner {
+func NewLast(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
-		Scanner:  li,
+		Scanner:  scn,
 		info:     newInfo(infoBufferCap),
 		nextInfo: newInfo(infoBufferCap),
 		last:     false,
 	})
 }
 
-func (lli *lastScanner) Scan() bool {
-	if !lli.started {
-		lli.scan = lli.Scanner.Scan()
-		lli.info.update(lli.Scanner)
-		lli.nextScan = lli.Scanner.Scan()
-		lli.nextInfo.update(lli.Scanner)
-		lli.started = true
-		return lli.scan
+func (lsc *lastScanner) Scan() bool {
+	if !lsc.started {
+		lsc.scan = lsc.Scanner.Scan()
+		lsc.info.update(lsc.Scanner)
+		lsc.nextScan = lsc.Scanner.Scan()
+		lsc.nextInfo.update(lsc.Scanner)
+		lsc.started = true
+		return lsc.scan
 	}
-	lli.info, lli.nextInfo = lli.nextInfo, lli.info
-	lli.scan, lli.nextScan = lli.nextScan, lli.Scanner.Scan()
-	lli.nextInfo.update(lli.Scanner)
-	return lli.scan
+	lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
+	lsc.scan, lsc.nextScan = lsc.nextScan, lsc.Scanner.Scan()
+	lsc.nextInfo.update(lsc.Scanner)
+	return lsc.scan
 }
 
-func (lli *lastScanner) Text() string {
-	return lli.info.Text
+func (lsc *lastScanner) Text() string {
+	return lsc.info.Text
 }
 
-func (lli *lastScanner) Bytes() []byte {
-	return lli.info.Bytes
+func (lsc *lastScanner) Bytes() []byte {
+	return lsc.info.Bytes
 }
 
-func (lli *lastScanner) Num() int {
-	return lli.info.Num
+func (lsc *lastScanner) Num() int {
+	return lsc.info.Num
 }
-func (lli *lastScanner) Match() bool {
-	return lli.info.Match
+func (lsc *lastScanner) Match() bool {
+	return lsc.info.Match
 }
 
-func (lli *lastScanner) Last() bool {
-	return lli.nextScan == false
+func (lsc *lastScanner) Last() bool {
+	return lsc.nextScan == false
 }
 
 // NewFilter creates a Scanner that produces only lines matched by a rule provided.
-func NewFilter(li Scanner, rule MatchRule) Scanner {
-	return NewOnlyMatch(NewRuled(li, rule))
+func NewFilter(scn Scanner, rule MatchRule) Scanner {
+	return NewOnlyMatch(NewRuled(scn, rule))
 }
