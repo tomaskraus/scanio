@@ -27,46 +27,45 @@ type readerScanner struct {
 	lineNum int
 }
 
-// New creates a new Scanner, using a scanner.
-func New(r io.Reader) Scanner {
-	return NewFromScanner(bufio.NewScanner(r))
-}
-
-// NewFromScanner creates a new Scanner, using a scanner.
-func NewFromScanner(sc *bufio.Scanner) Scanner {
+// NewScanner creates a new Scanner, using a scanner.
+func NewScanner(r io.Reader) Scanner {
 	return Scanner(&readerScanner{
-		sc: sc,
+		sc: bufio.NewScanner(r),
 	})
 }
 
-func (rli *readerScanner) Scan() bool {
-	if rli.sc.Scan() {
-		rli.lineNum++
-		rli.match = true
+func (sc *readerScanner) Buffer(buf []byte, max int) {
+
+}
+
+func (sc *readerScanner) Scan() bool {
+	if sc.sc.Scan() {
+		sc.lineNum++
+		sc.match = true
 		return true
 	}
-	rli.match = false
+	sc.match = false
 	return false
 }
 
-func (rli *readerScanner) Err() error {
-	return rli.sc.Err()
+func (sc *readerScanner) Err() error {
+	return sc.sc.Err()
 }
 
-func (rli *readerScanner) Text() string {
-	return rli.sc.Text()
+func (sc *readerScanner) Text() string {
+	return sc.sc.Text()
 }
 
-func (rli *readerScanner) Bytes() []byte {
-	return rli.sc.Bytes()
+func (sc *readerScanner) Bytes() []byte {
+	return sc.sc.Bytes()
 }
 
-func (rli *readerScanner) Match() bool {
-	return rli.match
+func (sc *readerScanner) Match() bool {
+	return sc.match
 }
 
-func (rli *readerScanner) LineNum() int {
-	return rli.lineNum
+func (sc *readerScanner) LineNum() int {
+	return sc.lineNum
 }
 
 // MatchRule for NewRuled.
@@ -86,16 +85,16 @@ func NewRuled(li Scanner, rule MatchRule) Scanner {
 	})
 }
 
-func (rli *ruleScanner) Scan() bool {
-	if rli.Scanner.Scan() {
-		rli.matchr = rli.rule(rli.Scanner.Text())
+func (sc *ruleScanner) Scan() bool {
+	if sc.Scanner.Scan() {
+		sc.matchr = sc.rule(sc.Scanner.Text())
 		return true
 	}
 	return false
 }
 
-func (rli *ruleScanner) Match() bool {
-	return rli.matchr
+func (sc *ruleScanner) Match() bool {
+	return sc.matchr
 }
 
 type onlyMatchScanner struct {

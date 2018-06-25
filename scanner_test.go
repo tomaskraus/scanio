@@ -1,7 +1,6 @@
 package scanio
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -23,34 +22,34 @@ type resultL struct {
 	last     bool
 }
 
-func TestNewFromScanner(t *testing.T) {
-	f := strings.NewReader("This is example  ")
-	sc := bufio.NewScanner(f)
-	sc.Split(bufio.ScanWords)
-	li := NewFromScanner(sc)
+// func TestNewFromScanner(t *testing.T) {
+// 	f := strings.NewReader("This is example  ")
+// 	sc := bufio.NewScanner(f)
+// 	sc.Split(bufio.ScanWords)
+// 	li := NewFromScanner(sc)
 
-	expected := []result{
-		{true, 1, true, "This"},
-		{true, 2, true, "is"},
-		{true, 3, true, "example"},
-		{false, 3, false, ""},
-		{false, 3, false, ""},
-		{false, 3, false, ""},
-		{false, 3, false, ""},
-	}
-	for _, v := range expected {
-		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+// 	expected := []result{
+// 		{true, 1, true, "This"},
+// 		{true, 2, true, "is"},
+// 		{true, 3, true, "example"},
+// 		{false, 3, false, ""},
+// 		{false, 3, false, ""},
+// 		{false, 3, false, ""},
+// 		{false, 3, false, ""},
+// 	}
+// 	for _, v := range expected {
+// 		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
 
-		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
-		}
-	}
-}
+// 		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
+// 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+// 		}
+// 	}
+// }
 
 func TestReaderScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := New(f)
+	li := NewScanner(f)
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -75,7 +74,7 @@ func TestScannerFile(t *testing.T) {
 		return
 	}
 
-	li := New(f)
+	li := NewScanner(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -111,7 +110,7 @@ func TestRuleScanner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	li := NewRuled(New(f), func(in string) bool {
+	li := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -143,7 +142,7 @@ func TestRuleScanner(t *testing.T) {
 func TestRuleScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewRuled(New(f), func(in string) bool {
+	li := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -168,7 +167,7 @@ func TestRuleScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewRuled(New(f), func(in string) bool {
+	li := NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	})
 
@@ -200,7 +199,7 @@ func TestRuleScannerFull(t *testing.T) {
 func TestOnlyMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewOnlyMatch(New(f))
+	li := NewOnlyMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -223,7 +222,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatch(New(f))
+	li := NewOnlyMatch(NewScanner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -258,7 +257,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyMatch(NewRuled(New(f), func(in string) bool {
+	li := NewOnlyMatch(NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	}))
 
@@ -281,7 +280,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 func TestLastScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewLast(New(f))
+	li := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{false, 0, false, "", true},
@@ -299,7 +298,7 @@ func TestLastScannerEmpty(t *testing.T) {
 func TestLastScannerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
-	li := NewLast(New(f))
+	li := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "one line", true},
@@ -323,7 +322,7 @@ func TestLastScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewLast(New(f))
+	li := NewLast(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", false},
@@ -356,7 +355,7 @@ func ExampleNewRuled() {
 	li := NewLast(
 		NewOnlyMatch(
 			NewRuled(
-				New(f),
+				NewScanner(f),
 				func(s string) bool {
 					return strings.HasPrefix(s, "#")
 				})))
@@ -377,7 +376,7 @@ func ExampleNewFilter() {
 
 	li := NewLast(
 		NewFilter(
-			New(f),
+			NewScanner(f),
 			func(s string) bool {
 				return strings.HasPrefix(s, "#")
 			}))
@@ -396,7 +395,7 @@ func ExampleNewFilter() {
 func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	li := NewOnlyNotMatch(New(f))
+	li := NewOnlyNotMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -419,7 +418,7 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyNotMatch(New(f))
+	li := NewOnlyNotMatch(NewScanner(f))
 
 	expected := []result{
 		{false, 11, false, ""},
@@ -443,7 +442,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	li := NewOnlyNotMatch(NewRuled(New(f), func(in string) bool {
+	li := NewOnlyNotMatch(NewRuled(NewScanner(f), func(in string) bool {
 		return strings.HasPrefix(in, "#")
 	}))
 
