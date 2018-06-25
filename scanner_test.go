@@ -1,6 +1,7 @@
 package scanio
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -22,29 +23,28 @@ type resultL struct {
 	last     bool
 }
 
-// func TestNewFromScanner(t *testing.T) {
-// 	f := strings.NewReader("This is example  ")
-// 	sc := bufio.NewScanner(f)
-// 	sc.Split(bufio.ScanWords)
-// 	li := NewFromScanner(sc)
+func TestScanWords(t *testing.T) {
+	f := strings.NewReader("This is example  ")
+	li := NewScanner(f)
+	li.Split(bufio.ScanWords)
 
-// 	expected := []result{
-// 		{true, 1, true, "This"},
-// 		{true, 2, true, "is"},
-// 		{true, 3, true, "example"},
-// 		{false, 3, false, ""},
-// 		{false, 3, false, ""},
-// 		{false, 3, false, ""},
-// 		{false, 3, false, ""},
-// 	}
-// 	for _, v := range expected {
-// 		res, num, match, text := li.Scan(), li.LineNum(), li.Match(), li.Text()
+	expected := []result{
+		{true, 1, true, "This"},
+		{true, 2, true, "is"},
+		{true, 3, true, "example"},
+		{false, 3, false, ""},
+		{false, 3, false, ""},
+		{false, 3, false, ""},
+		{false, 3, false, ""},
+	}
+	for _, v := range expected {
+		res, num, match, text := li.Scan(), li.Num(), li.Match(), li.Text()
 
-// 		if res != v.canParse || num != v.lineNum || match != v.match || text != v.text {
-// 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
-// 		}
-// 	}
-// }
+		if res != v.canParse || num != v.num || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		}
+	}
+}
 
 func TestReaderScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
