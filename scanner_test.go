@@ -1,4 +1,4 @@
-package liner
+package scanio
 
 import (
 	"bufio"
@@ -47,7 +47,7 @@ func TestNewFromScanner(t *testing.T) {
 	}
 }
 
-func TestReaderLinerEmpty(t *testing.T) {
+func TestReaderScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
 	li := New(f)
@@ -67,7 +67,7 @@ func TestReaderLinerEmpty(t *testing.T) {
 	}
 }
 
-func TestLinerFile(t *testing.T) {
+func TestScannerFile(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -102,7 +102,7 @@ func TestLinerFile(t *testing.T) {
 	}
 }
 
-func TestRuleLiner(t *testing.T) {
+func TestRuleScanner(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -140,7 +140,7 @@ func TestRuleLiner(t *testing.T) {
 	}
 }
 
-func TestRuleLinerEmpty(t *testing.T) {
+func TestRuleScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
 	li := NewRuled(New(f), func(in string) bool {
@@ -160,7 +160,7 @@ func TestRuleLinerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestRuleLinerFull(t *testing.T) {
+func TestRuleScannerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -197,7 +197,7 @@ func TestRuleLinerFull(t *testing.T) {
 	}
 }
 
-func TestOnlyMatchLinerEmpty(t *testing.T) {
+func TestOnlyMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
 	li := NewOnlyMatch(New(f))
@@ -215,7 +215,7 @@ func TestOnlyMatchLinerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestOnlyMatchLinerFull(t *testing.T) {
+func TestOnlyMatchScannerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -250,7 +250,7 @@ func TestOnlyMatchLinerFull(t *testing.T) {
 	}
 }
 
-func TestOnlyMatchLinerRuled(t *testing.T) {
+func TestOnlyMatchScannerRuled(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -278,7 +278,7 @@ func TestOnlyMatchLinerRuled(t *testing.T) {
 	}
 }
 
-func TestLastLinerEmpty(t *testing.T) {
+func TestLastScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
 	li := NewLast(New(f))
@@ -296,7 +296,7 @@ func TestLastLinerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestLastLinerOneLine(t *testing.T) {
+func TestLastScannerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
 	li := NewLast(New(f))
@@ -315,7 +315,7 @@ func TestLastLinerOneLine(t *testing.T) {
 	}
 }
 
-func TestLastLinerFull(t *testing.T) {
+func TestLastScannerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -393,7 +393,7 @@ func ExampleNewFilter() {
 	// (2, "# comment 1"), (4, "#comment2").
 }
 
-func TestOnlyNotMatchLinerEmpty(t *testing.T) {
+func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
 	li := NewOnlyNotMatch(New(f))
@@ -411,7 +411,7 @@ func TestOnlyNotMatchLinerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestOnlyNotMatchLinerFull(t *testing.T) {
+func TestOnlyNotMatchScannerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -435,7 +435,7 @@ func TestOnlyNotMatchLinerFull(t *testing.T) {
 	}
 }
 
-func TestOnlyNotMatchLinerRuled(t *testing.T) {
+func TestOnlyNotMatchScannerRuled(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {

@@ -1,4 +1,4 @@
-package liner
+package scanio
 
 import (
 	"bufio"
