@@ -146,6 +146,12 @@ func (scn *onlyNotMatchScanner) Scan() bool {
 	return false
 }
 
+// ---------------------------------------------------------------------------
+
+const (
+	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
+)
+
 // info Scanner info.
 type info struct {
 	Text  string
@@ -154,11 +160,9 @@ type info struct {
 	Match bool
 }
 
-const infoBufferCap = 1024
-
-func newInfo(bufferCap int) *info {
+func newInfo(bufferLen, bufferCap int) *info {
 	i := info{}
-	i.Bytes = make([]byte, bufferCap)
+	i.Bytes = make([]byte, bufferLen, bufferCap)
 	return &i
 }
 
@@ -178,10 +182,11 @@ type LastScanner interface {
 
 type lastScanner struct {
 	Scanner
-	info, nextInfo *info
-	scan, nextScan bool
-	last           bool // true if the current line is the last one
-	started        bool
+	info, nextInfo  *info
+	scan, nextScan  bool
+	last            bool // true if the current line is the last one
+	started         bool
+	bufSize, bufCap int
 }
 
 // NewLastScanner creates a new LastScanner using a Scanner.
@@ -189,14 +194,16 @@ func NewLastScanner(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
 		Scanner: scn,
 		last:    false,
+		bufSize: startBufSize,
+		bufCap:  bufio.MaxScanTokenSize,
 	})
 }
 
 func (lsc *lastScanner) Scan() bool {
 	if !lsc.started {
 		//initialize buffers
-		lsc.info = newInfo(infoBufferCap)
-		lsc.nextInfo = newInfo(infoBufferCap)
+		lsc.info = newInfo(lsc.bufSize, lsc.bufCap)
+		lsc.nextInfo = newInfo(lsc.bufSize, lsc.bufCap)
 
 		lsc.scan = lsc.Scanner.Scan()
 		lsc.info.update(lsc.Scanner)
@@ -213,6 +220,15 @@ func (lsc *lastScanner) Scan() bool {
 
 func (lsc *lastScanner) Text() string {
 	return lsc.info.Text
+}
+
+func (lsc *lastScanner) Buffer(buf []byte, max int) {
+	lsc.Scanner.Buffer(buf, max)
+	// memorize size values for future creation of prev/next buffers
+	lsc.bufSize, lsc.bufCap = len(buf), max
+	if lsc.bufCap < lsc.bufSize {
+		lsc.bufCap = lsc.bufSize
+	}
 }
 
 func (lsc *lastScanner) Bytes() []byte {

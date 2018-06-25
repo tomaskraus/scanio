@@ -9,11 +9,11 @@ import (
 func Example() {
 	r := bytes.NewReader([]byte("abcd ef gh"))
 	sc := NewScanner(r)
-	buf := make([]byte, 5)
-	sc.Buffer(buf, 2)
 	sc.Split(bufio.ScanWords)
 
 	sc = NewLastScanner(sc)
+	buf := make([]byte, 5)
+	sc.Buffer(buf, 2)
 
 	scanned := false
 	for scanned = sc.Scan(); scanned == true; scanned = sc.Scan() {
