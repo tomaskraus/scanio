@@ -187,15 +187,17 @@ type lastScanner struct {
 // NewLastScanner creates a new LastScanner using a Scanner.
 func NewLastScanner(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
-		Scanner:  scn,
-		info:     newInfo(infoBufferCap),
-		nextInfo: newInfo(infoBufferCap),
-		last:     false,
+		Scanner: scn,
+		last:    false,
 	})
 }
 
 func (lsc *lastScanner) Scan() bool {
 	if !lsc.started {
+		//initialize buffers
+		lsc.info = newInfo(infoBufferCap)
+		lsc.nextInfo = newInfo(infoBufferCap)
+
 		lsc.scan = lsc.Scanner.Scan()
 		lsc.info.update(lsc.Scanner)
 		lsc.nextScan = lsc.Scanner.Scan()
