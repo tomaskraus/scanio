@@ -203,7 +203,7 @@ type LastScanner interface {
 	Last() bool
 }
 
-// info stores the Scanner's scan result.
+// info stores the Scanner's current state.
 type info struct {
 	ScanResult bool // holds result of Scanner.Scan()
 	Text       string
@@ -218,7 +218,7 @@ func newInfo(bufferLen, bufferCap int) *info {
 	return &i
 }
 
-// updateInfo updates an Info, reflecting current state of a Scanner.
+// updateInfo makes a snapshot of Scanner's current state.
 func (info *info) update(scn Scanner, scResult bool) {
 	info.Text, info.Num, info.Match, info.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
 	// preserve the underlying scanner's buffer
