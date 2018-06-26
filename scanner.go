@@ -74,6 +74,8 @@ func (sc *readerScanner) Num() int {
 	return sc.num
 }
 
+//--------------------------------------------------------------------------------
+
 // MatchRule for NewRuleScanner.
 type MatchRule func(input string) bool
 
@@ -102,6 +104,8 @@ func (sc *ruleScanner) Scan() bool {
 func (sc *ruleScanner) Match() bool {
 	return sc.matchr
 }
+
+//--------------------------------------------------------------------------------
 
 type onlyMatchScanner struct {
 	Scanner
@@ -147,9 +151,19 @@ func (scn *onlyNotMatchScanner) Scan() bool {
 
 // ---------------------------------------------------------------------------
 
-const (
-	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
-)
+// NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
+func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
+	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
+}
+
+// ---------------------------------------------------------------------------
+
+// LastScanner can tell if the current token is the last one.
+// Does the one token forward-read to achieve this.
+type LastScanner interface {
+	Scanner
+	Last() bool
+}
 
 // info stores the Scanner's scan result.
 type info struct {
@@ -174,12 +188,9 @@ func (info *info) update(scn Scanner, scResult bool) {
 	info.Bytes = info.Bytes[:length]
 }
 
-// LastScanner can tell if the current token is the last one.
-// Does the one token forward-read to achieve this.
-type LastScanner interface {
-	Scanner
-	Last() bool
-}
+const (
+	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
+)
 
 type lastScanner struct {
 	Scanner
@@ -242,9 +253,4 @@ func (lsc *lastScanner) Match() bool {
 
 func (lsc *lastScanner) Last() bool {
 	return lsc.nextInfo.ScanResult == false
-}
-
-// NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
-func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
-	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
 }
