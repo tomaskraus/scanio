@@ -151,7 +151,7 @@ const (
 	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
 )
 
-// info Scanner info.
+// info stores the Scanner's scan result.
 type info struct {
 	Text  string
 	Bytes []byte
@@ -168,7 +168,7 @@ func newInfo(bufferLen, bufferCap int) *info {
 // updateInfo updates an Info, reflecting current state of a Scanner.
 func (info *info) update(scn Scanner) {
 	info.Text, info.Num, info.Match = scn.Text(), scn.Num(), scn.Match()
-	// copy slices
+	// preserve the underlying scanner's buffer
 	length := copy(info.Bytes, scn.Bytes())
 	info.Bytes = info.Bytes[:length]
 }
