@@ -222,8 +222,9 @@ func newInfo(bufferLen, bufferCap int) *info {
 func (info *info) update(scn Scanner, scResult bool) {
 	info.Text, info.Num, info.Match, info.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
 	// preserve the underlying scanner's buffer
-	length := copy(info.Bytes, scn.Bytes())
-	info.Bytes = info.Bytes[:length]
+	srcLen := len(scn.Bytes())
+	info.Bytes = info.Bytes[:srcLen]
+	copy(info.Bytes, scn.Bytes())
 }
 
 const (
