@@ -153,10 +153,11 @@ const (
 
 // info stores the Scanner's scan result.
 type info struct {
-	Text  string
-	Bytes []byte
-	Num   int
-	Match bool
+	ScanResult bool // holds result of Scanner.Scan()
+	Text       string
+	Bytes      []byte
+	Num        int
+	Match      bool
 }
 
 func newInfo(bufferLen, bufferCap int) *info {
@@ -166,8 +167,8 @@ func newInfo(bufferLen, bufferCap int) *info {
 }
 
 // updateInfo updates an Info, reflecting current state of a Scanner.
-func (info *info) update(scn Scanner) {
-	info.Text, info.Num, info.Match = scn.Text(), scn.Num(), scn.Match()
+func (info *info) update(scn Scanner, scResult bool) {
+	info.Text, info.Num, info.Match, info.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
 	// preserve the underlying scanner's buffer
 	length := copy(info.Bytes, scn.Bytes())
 	info.Bytes = info.Bytes[:length]
@@ -183,17 +184,14 @@ type LastScanner interface {
 type lastScanner struct {
 	Scanner
 	info, nextInfo  *info
-	scan, nextScan  bool
-	last            bool
-	started         bool
 	bufSize, bufCap int
+	started         bool
 }
 
 // NewLastScanner creates a new LastScanner.
 func NewLastScanner(scn Scanner) LastScanner {
 	return LastScanner(&lastScanner{
 		Scanner: scn,
-		last:    false,
 		bufSize: startBufSize,
 		bufCap:  bufio.MaxScanTokenSize,
 	})
@@ -205,17 +203,17 @@ func (lsc *lastScanner) Scan() bool {
 		lsc.info = newInfo(lsc.bufSize, lsc.bufCap)
 		lsc.nextInfo = newInfo(lsc.bufSize, lsc.bufCap)
 
-		lsc.scan = lsc.Scanner.Scan()
-		lsc.info.update(lsc.Scanner)
-		lsc.nextScan = lsc.Scanner.Scan()
-		lsc.nextInfo.update(lsc.Scanner)
+		scanRes := lsc.Scanner.Scan()
+		lsc.info.update(lsc.Scanner, scanRes)
+		nextScanRes := lsc.Scanner.Scan()
+		lsc.nextInfo.update(lsc.Scanner, nextScanRes)
 		lsc.started = true
-		return lsc.scan
+		return lsc.info.ScanResult
 	}
 	lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
-	lsc.scan, lsc.nextScan = lsc.nextScan, lsc.Scanner.Scan()
-	lsc.nextInfo.update(lsc.Scanner)
-	return lsc.scan
+	nextScanRes2 := lsc.Scanner.Scan()
+	lsc.nextInfo.update(lsc.Scanner, nextScanRes2)
+	return lsc.info.ScanResult
 }
 
 func (lsc *lastScanner) Text() string {
@@ -243,7 +241,7 @@ func (lsc *lastScanner) Match() bool {
 }
 
 func (lsc *lastScanner) Last() bool {
-	return lsc.nextScan == false
+	return lsc.nextInfo.ScanResult == false
 }
 
 // NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
