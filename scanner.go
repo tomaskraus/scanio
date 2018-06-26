@@ -21,6 +21,8 @@ type Scanner interface {
 	Num() int    // number of a current token
 }
 
+//--------------------------------------------------------------------
+
 // reader Scanner
 type readerScanner struct {
 	scn   *bufio.Scanner
@@ -82,7 +84,7 @@ type MatchRule func(input string) bool
 type ruleScanner struct {
 	Scanner
 	rule   MatchRule
-	matchr bool
+	matchR bool
 }
 
 // NewRuleScanner returns new, rule-based Scanner.
@@ -95,14 +97,45 @@ func NewRuleScanner(scn Scanner, rule MatchRule) Scanner {
 
 func (sc *ruleScanner) Scan() bool {
 	if sc.Scanner.Scan() {
-		sc.matchr = sc.rule(sc.Scanner.Text())
+		sc.matchR = sc.rule(sc.Scanner.Text())
 		return true
 	}
 	return false
 }
 
 func (sc *ruleScanner) Match() bool {
-	return sc.matchr
+	return sc.matchR
+}
+
+//--------------------------------------------------------------------------------
+
+// MatchByteRule for NewByteRuleScanner.
+type MatchByteRule func(input []byte) bool
+
+type byteRuleScanner struct {
+	Scanner
+	rule   MatchByteRule
+	matchR bool
+}
+
+// NewByteRuleScanner returns new, rule-based Scanner.
+func NewByteRuleScanner(scn Scanner, rule MatchByteRule) Scanner {
+	return Scanner(&byteRuleScanner{
+		Scanner: scn,
+		rule:    rule,
+	})
+}
+
+func (sc *byteRuleScanner) Scan() bool {
+	if sc.Scanner.Scan() {
+		sc.matchR = sc.rule(sc.Scanner.Bytes())
+		return true
+	}
+	return false
+}
+
+func (sc *byteRuleScanner) Match() bool {
+	return sc.matchR
 }
 
 //--------------------------------------------------------------------------------
@@ -154,6 +187,11 @@ func (scn *onlyNotMatchScanner) Scan() bool {
 // NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
 func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
 	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
+}
+
+// NewByteFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
+func NewByteFilterScanner(scn Scanner, rule MatchByteRule) Scanner {
+	return NewOnlyMatchScanner(NewByteRuleScanner(scn, rule))
 }
 
 // ---------------------------------------------------------------------------

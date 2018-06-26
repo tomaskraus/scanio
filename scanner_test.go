@@ -349,7 +349,7 @@ func TestLastScannerFull(t *testing.T) {
 	}
 }
 
-func ExampleNewRuled() {
+func ExampleNewRuleScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
 	scn := NewLastScanner(
@@ -371,7 +371,7 @@ func ExampleNewRuled() {
 	// (2, "# comment 1"), (4, "#comment2").
 }
 
-func ExampleNewFilter() {
+func ExampleNewFilterScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
 	scn := NewLastScanner(
@@ -467,4 +467,26 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
 		}
 	}
+}
+
+func ExampleNewByteFilterScanner() {
+
+	const input = "1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := NewByteFilterScanner(
+		NewScanner(strings.NewReader(input)),
+		func(input []byte) bool {
+			return (input[0] == []byte("1")[0])
+		})
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+
+	// Output:
+	// 1234
+	// 123456
 }
