@@ -8,10 +8,10 @@ import (
 	"testing"
 )
 
-func TestLastScannerEmpty(t *testing.T) {
+func TestAheadScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewLastScanner(NewScanner(f))
+	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
 		{false, 0, false, "", true},
@@ -26,10 +26,10 @@ func TestLastScannerEmpty(t *testing.T) {
 		}
 	}
 }
-func TestLastScannerOneLine(t *testing.T) {
+func TestAheadScannerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
-	scn := NewLastScanner(NewScanner(f))
+	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "one line", true},
@@ -45,7 +45,7 @@ func TestLastScannerOneLine(t *testing.T) {
 	}
 }
 
-func TestLastScannerFull(t *testing.T) {
+func TestAheadScannerFull(t *testing.T) {
 	f, err := os.Open("assets/simpleFile.txt")
 	defer f.Close()
 	if err != nil {
@@ -53,7 +53,7 @@ func TestLastScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewLastScanner(NewScanner(f))
+	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", false},
@@ -83,7 +83,7 @@ func TestLastScannerFull(t *testing.T) {
 func ExampleNewRuleScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	scn := NewLastScanner(
+	scn := NewAheadScanner(
 		NewOnlyMatchScanner(
 			NewRuleScanner(
 				NewScanner(f),
@@ -105,7 +105,7 @@ func ExampleNewRuleScanner() {
 func ExampleNewFilterScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	scn := NewLastScanner(
+	scn := NewAheadScanner(
 		NewFilterScanner(
 			NewScanner(f),
 			func(s string) bool {
@@ -224,11 +224,11 @@ func ExampleNewByteFilterScanner() {
 
 // -----------------------------------------------------------------------
 
-func ExampleLastScanner_NumConsecutive() {
+func ExampleAheadScanner_NumConsecutive() {
 
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	// let's match words beginning with "1"
-	sc := NewLastScanner(
+	sc := NewAheadScanner(
 		NewByteRuleScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {
@@ -257,11 +257,11 @@ func ExampleLastScanner_NumConsecutive() {
 	// 10: "", false, false, 0
 }
 
-func ExampleLastScanner_NumConsecutive2() {
+func ExampleAheadScanner_NumConsecutive2() {
 
 	const input = "34 235 1234"
 	// let's match words beginning with "1"
-	sc := NewLastScanner(
+	sc := NewAheadScanner(
 		NewScanner(strings.NewReader(input)),
 	)
 
@@ -285,7 +285,7 @@ func lastConsecutiveMatch(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{false, false, false, false, false, false, false, false, false, false}
 	// let's filter words beginning with "1"
-	scanner := NewLastScanner(
+	scanner := NewAheadScanner(
 		NewScanner(strings.NewReader(input)))
 
 	// Set the split function for the scanning operation.
@@ -304,7 +304,7 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{false, false, true, false, false, false, true, false, false, true}
 	// let's filter words beginning with "1"
-	scanner := NewLastScanner(
+	scanner := NewAheadScanner(
 		NewByteRuleScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {
@@ -327,7 +327,7 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{true, false, false, true, false, true}
 	// let's filter words beginning with "1"
-	scanner := NewLastScanner(
+	scanner := NewAheadScanner(
 		NewByteFilterScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {

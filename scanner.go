@@ -196,9 +196,9 @@ func NewByteFilterScanner(scn Scanner, rule MatchByteRule) Scanner {
 
 // ---------------------------------------------------------------------------
 
-// LastScanner can tell if the current token is the last one.
+// AheadScanner can tell if the current token is the last one.
 // Does the one token forward-read to achieve this.
-type LastScanner interface {
+type AheadScanner interface {
 	Scanner
 	Last() bool
 	BeginConsecutive() bool // begin of consecutive match sequence (even if its length is 1)
@@ -243,7 +243,7 @@ const (
 	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
 )
 
-type lastScanner struct {
+type aheadScanner struct {
 	Scanner
 	info, nextInfo         *info
 	consecNum              int
@@ -253,100 +253,100 @@ type lastScanner struct {
 	started                bool
 }
 
-// NewLastScanner creates a new LastScanner.
-func NewLastScanner(scn Scanner) LastScanner {
-	return LastScanner(&lastScanner{
+// NewAheadScanner creates a new AheadScanner.
+func NewAheadScanner(scn Scanner) AheadScanner {
+	return AheadScanner(&aheadScanner{
 		Scanner: scn,
 		bufSize: startBufSize,
 		bufCap:  bufio.MaxScanTokenSize,
 	})
 }
 
-func (lsc *lastScanner) Scan() bool {
-	if !lsc.started {
+func (asc *aheadScanner) Scan() bool {
+	if !asc.started {
 		//initialize buffers
-		lsc.info = newInfo(lsc.bufSize, lsc.bufCap)
-		lsc.nextInfo = newInfo(lsc.bufSize, lsc.bufCap)
+		asc.info = newInfo(asc.bufSize, asc.bufCap)
+		asc.nextInfo = newInfo(asc.bufSize, asc.bufCap)
 
 		//scan two tokens (one ahead)
-		scanRes := lsc.Scanner.Scan()
-		lsc.info.update(lsc.Scanner, scanRes)
-		nextScanRes := lsc.Scanner.Scan()
-		lsc.nextInfo.update(lsc.Scanner, nextScanRes)
+		scanRes := asc.Scanner.Scan()
+		asc.info.update(asc.Scanner, scanRes)
+		nextScanRes := asc.Scanner.Scan()
+		asc.nextInfo.update(asc.Scanner, nextScanRes)
 
-		lsc.started = true
+		asc.started = true
 	} else {
-		lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
-		nextScanRes2 := lsc.Scanner.Scan()
-		lsc.nextInfo.update(lsc.Scanner, nextScanRes2)
+		asc.info, asc.nextInfo = asc.nextInfo, asc.info
+		nextScanRes2 := asc.Scanner.Scan()
+		asc.nextInfo.update(asc.Scanner, nextScanRes2)
 	}
 
-	if !lsc.info.ScanResult {
-		lsc.consecNum = 0
-		lsc.consecBegin, lsc.consecEnd = false, false
+	if !asc.info.ScanResult {
+		asc.consecNum = 0
+		asc.consecBegin, asc.consecEnd = false, false
 		return false
 	}
 
 	consecModeHasNowStarted := false
-	if !lsc.consecMode {
-		lsc.consecNum = 0
-		lsc.consecBegin, lsc.consecEnd = false, false
-		if lsc.info.Match {
+	if !asc.consecMode {
+		asc.consecNum = 0
+		asc.consecBegin, asc.consecEnd = false, false
+		if asc.info.Match {
 			consecModeHasNowStarted = true
-			lsc.consecBegin = true
-			lsc.consecMode = true
+			asc.consecBegin = true
+			asc.consecMode = true
 		}
 	}
-	if lsc.consecMode {
-		lsc.consecNum++
-		if !lsc.info.isConsecMatch(lsc.nextInfo) {
-			lsc.consecEnd = true
-			lsc.consecMode = false
+	if asc.consecMode {
+		asc.consecNum++
+		if !asc.info.isConsecMatch(asc.nextInfo) {
+			asc.consecEnd = true
+			asc.consecMode = false
 		}
 		if !consecModeHasNowStarted {
-			lsc.consecBegin = false
+			asc.consecBegin = false
 		}
 	}
 
 	return true
 }
 
-func (lsc *lastScanner) Text() string {
-	return lsc.info.Text
+func (asc *aheadScanner) Text() string {
+	return asc.info.Text
 }
 
-func (lsc *lastScanner) Buffer(buf []byte, max int) {
-	lsc.Scanner.Buffer(buf, max)
+func (asc *aheadScanner) Buffer(buf []byte, max int) {
+	asc.Scanner.Buffer(buf, max)
 	// memorize size values for future creation of prev/next buffers
-	lsc.bufSize, lsc.bufCap = len(buf), max
-	if lsc.bufCap < lsc.bufSize {
-		lsc.bufCap = lsc.bufSize
+	asc.bufSize, asc.bufCap = len(buf), max
+	if asc.bufCap < asc.bufSize {
+		asc.bufCap = asc.bufSize
 	}
 }
 
-func (lsc *lastScanner) Bytes() []byte {
-	return lsc.info.Bytes
+func (asc *aheadScanner) Bytes() []byte {
+	return asc.info.Bytes
 }
 
-func (lsc *lastScanner) Num() int {
-	return lsc.info.Num
+func (asc *aheadScanner) Num() int {
+	return asc.info.Num
 }
-func (lsc *lastScanner) Match() bool {
-	return lsc.info.Match
-}
-
-func (lsc *lastScanner) Last() bool {
-	return lsc.nextInfo.ScanResult == false
+func (asc *aheadScanner) Match() bool {
+	return asc.info.Match
 }
 
-func (lsc *lastScanner) BeginConsecutive() bool {
-	return lsc.consecBegin
+func (asc *aheadScanner) Last() bool {
+	return asc.nextInfo.ScanResult == false
 }
 
-func (lsc *lastScanner) EndConsecutive() bool {
-	return lsc.consecEnd
+func (asc *aheadScanner) BeginConsecutive() bool {
+	return asc.consecBegin
 }
 
-func (lsc *lastScanner) NumConsecutive() int {
-	return lsc.consecNum
+func (asc *aheadScanner) EndConsecutive() bool {
+	return asc.consecEnd
+}
+
+func (asc *aheadScanner) NumConsecutive() int {
+	return asc.consecNum
 }
