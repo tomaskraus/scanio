@@ -7,29 +7,29 @@ import "bufio"
 type AheadScanner interface {
 	Scanner
 	Last() bool
-	BeginConsecutive() bool // begin of consecutive match sequence (even if its length is 1)
-	EndConsecutive() bool   // end of consecutive match sequence (even if its length is 1)
-	NumConsecutive() int    // number of consecutive matches
+	BeginConsecutive() bool // begin of consecutive positive-match sequence (even if its length is 1)
+	EndConsecutive() bool   // end of consecutive positive-match sequence (even if its length is 1)
+	NumConsecutive() int    // number of consecutive positive matches
 }
 
 // info stores the Scanner's current state.
 type info struct {
-	ScanResult bool // holds result of Scanner.Scan()
-	Text       string
-	Bytes      []byte
-	Num        int
-	Match      bool
+	ScanRes bool // holds result of Scanner.Scan()
+	Text    string
+	Bytes   []byte
+	Num     int
+	Match   bool
 }
 
-func newInfo(bufferLen, bufferCap int) *info {
+func newInfo(bufLen, bufCap int) *info {
 	i := info{}
-	i.Bytes = make([]byte, bufferLen, bufferCap)
+	i.Bytes = make([]byte, bufLen, bufCap)
 	return &i
 }
 
 // isConsecEnd returns true if the next Info has a consecutive match
-func (inf *info) isConsecMatch(nextInf *info) bool {
-	if inf.Match && nextInf.Match && inf.Num+1 == nextInf.Num {
+func (i *info) isConsecMatch(nextI *info) bool {
+	if i.Match && nextI.Match && i.Num+1 == nextI.Num {
 		// next token matches
 		return true
 	}
@@ -37,12 +37,12 @@ func (inf *info) isConsecMatch(nextInf *info) bool {
 }
 
 // update makes a snapshot of Scanner's current state.
-func (inf *info) update(scn Scanner, scResult bool) {
-	inf.Text, inf.Num, inf.Match, inf.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
+func (i *info) update(sc Scanner, scResult bool) {
+	i.Text, i.Num, i.Match, i.ScanRes = sc.Text(), sc.Num(), sc.Match(), scResult
 	// preserve the underlying scanner's buffer
-	srcLen := len(scn.Bytes())
-	inf.Bytes = inf.Bytes[:srcLen]
-	copy(inf.Bytes, scn.Bytes())
+	srcLen := len(sc.Bytes())
+	i.Bytes = i.Bytes[:srcLen]
+	copy(i.Bytes, sc.Bytes())
 }
 
 const (
@@ -60,99 +60,98 @@ type aheadScanner struct {
 }
 
 // NewAheadScanner creates a new AheadScanner.
-func NewAheadScanner(scn Scanner) AheadScanner {
+func NewAheadScanner(sc Scanner) AheadScanner {
 	return AheadScanner(&aheadScanner{
-		Scanner: scn,
+		Scanner: sc,
 		bufSize: startBufSize,
 		bufCap:  bufio.MaxScanTokenSize,
 	})
 }
 
-func (asc *aheadScanner) Scan() bool {
-	if !asc.started {
+func (sc *aheadScanner) Scan() bool {
+	if !sc.started {
 		//initialize buffers
-		asc.info = newInfo(asc.bufSize, asc.bufCap)
-		asc.nextInfo = newInfo(asc.bufSize, asc.bufCap)
+		sc.info = newInfo(sc.bufSize, sc.bufCap)
+		sc.nextInfo = newInfo(sc.bufSize, sc.bufCap)
 
 		//scan two tokens (one ahead)
-		scanRes := asc.Scanner.Scan()
-		asc.info.update(asc.Scanner, scanRes)
-		nextScanRes := asc.Scanner.Scan()
-		asc.nextInfo.update(asc.Scanner, nextScanRes)
+		scanRes := sc.Scanner.Scan()
+		sc.info.update(sc.Scanner, scanRes)
+		nextScanRes := sc.Scanner.Scan()
+		sc.nextInfo.update(sc.Scanner, nextScanRes)
 
-		asc.started = true
+		sc.started = true
 	} else {
-		asc.info, asc.nextInfo = asc.nextInfo, asc.info
-		nextScanRes2 := asc.Scanner.Scan()
-		asc.nextInfo.update(asc.Scanner, nextScanRes2)
+		sc.info, sc.nextInfo = sc.nextInfo, sc.info
+		nextScanRes2 := sc.Scanner.Scan()
+		sc.nextInfo.update(sc.Scanner, nextScanRes2)
 	}
 
-	if !asc.info.ScanResult {
-		asc.consecNum = 0
-		asc.consecBegin, asc.consecEnd = false, false
+	if !sc.info.ScanRes {
+		sc.consecNum = 0
+		sc.consecBegin, sc.consecEnd = false, false
 		return false
 	}
 
-	consecModeHasNowStarted := false
-	if !asc.consecMode {
-		asc.consecNum = 0
-		asc.consecBegin, asc.consecEnd = false, false
-		if asc.info.Match {
-			consecModeHasNowStarted = true
-			asc.consecBegin = true
-			asc.consecMode = true
+	if !sc.consecMode {
+		sc.consecNum = 0
+		sc.consecBegin, sc.consecEnd = false, false
+		if sc.info.Match {
+			sc.consecBegin = true
+			sc.consecMode = true
 		}
 	}
-	if asc.consecMode {
-		asc.consecNum++
-		if !asc.info.isConsecMatch(asc.nextInfo) {
-			asc.consecEnd = true
-			asc.consecMode = false
+	if sc.consecMode {
+		sc.consecNum++
+		if !sc.info.isConsecMatch(sc.nextInfo) {
+			sc.consecEnd = true
+			sc.consecMode = false
 		}
-		if !consecModeHasNowStarted {
-			asc.consecBegin = false
+		// preserve consecBegin flag if consecEnd has occurred at the same token
+		if sc.consecNum > 1 {
+			sc.consecBegin = false
 		}
 	}
 
 	return true
 }
 
-func (asc *aheadScanner) Text() string {
-	return asc.info.Text
+func (sc *aheadScanner) Text() string {
+	return sc.info.Text
 }
 
-func (asc *aheadScanner) Buffer(buf []byte, max int) {
-	asc.Scanner.Buffer(buf, max)
+func (sc *aheadScanner) Buffer(buf []byte, max int) {
+	sc.Scanner.Buffer(buf, max)
 	// memorize size values for future creation of prev/next buffers
-	asc.bufSize, asc.bufCap = len(buf), max
-	if asc.bufCap < asc.bufSize {
-		asc.bufCap = asc.bufSize
+	sc.bufSize, sc.bufCap = len(buf), max
+	if sc.bufCap < sc.bufSize {
+		sc.bufCap = sc.bufSize
 	}
 }
 
-func (asc *aheadScanner) Bytes() []byte {
-	return asc.info.Bytes
+func (sc *aheadScanner) Bytes() []byte {
+	return sc.info.Bytes
 }
 
-func (asc *aheadScanner) Num() int {
-	return asc.info.Num
+func (sc *aheadScanner) Num() int {
+	return sc.info.Num
 }
-func (asc *aheadScanner) Match() bool {
-	return asc.info.Match
-}
-
-func (asc *aheadScanner) Last() bool {
-	return asc.nextInfo.ScanResult == false
+func (sc *aheadScanner) Match() bool {
+	return sc.info.Match
 }
 
-func (asc *aheadScanner) BeginConsecutive() bool {
-	return asc.consecBegin
+func (sc *aheadScanner) Last() bool {
+	return sc.nextInfo.ScanRes == false
 }
 
-func (asc *aheadScanner) EndConsecutive() bool {
-	return asc.consecEnd
+func (sc *aheadScanner) BeginConsecutive() bool {
+	return sc.consecBegin
 }
 
-func (asc *aheadScanner) NumConsecutive() int {
-	return asc.consecNum
+func (sc *aheadScanner) EndConsecutive() bool {
+	return sc.consecEnd
+}
+
+func (sc *aheadScanner) NumConsecutive() int {
+	return sc.consecNum
 }
