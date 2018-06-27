@@ -201,6 +201,9 @@ func NewByteFilterScanner(scn Scanner, rule MatchByteRule) Scanner {
 type LastScanner interface {
 	Scanner
 	Last() bool
+	BeginConsecutive() bool // begin of consecutive match sequence (even if its length is 1)
+	EndConsecutive() bool   // end of consecutive match sequence (even if its length is 1)
+	NumConsecutive() int    // number of consecutive matches
 }
 
 // info stores the Scanner's current state.
@@ -218,13 +221,22 @@ func newInfo(bufferLen, bufferCap int) *info {
 	return &i
 }
 
-// updateInfo makes a snapshot of Scanner's current state.
-func (info *info) update(scn Scanner, scResult bool) {
-	info.Text, info.Num, info.Match, info.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
+// isConsecEnd returns true if the next Info has a consecutive match
+func (inf *info) isConsecMatch(nextInf *info) bool {
+	if inf.Match && nextInf.Match && inf.Num+1 == nextInf.Num {
+		// next token matches
+		return true
+	}
+	return false
+}
+
+// update makes a snapshot of Scanner's current state.
+func (inf *info) update(scn Scanner, scResult bool) {
+	inf.Text, inf.Num, inf.Match, inf.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
 	// preserve the underlying scanner's buffer
 	srcLen := len(scn.Bytes())
-	info.Bytes = info.Bytes[:srcLen]
-	copy(info.Bytes, scn.Bytes())
+	inf.Bytes = inf.Bytes[:srcLen]
+	copy(inf.Bytes, scn.Bytes())
 }
 
 const (
@@ -233,9 +245,12 @@ const (
 
 type lastScanner struct {
 	Scanner
-	info, nextInfo  *info
-	bufSize, bufCap int
-	started         bool
+	info, nextInfo         *info
+	consecNum              int
+	consecBegin, consecEnd bool
+	consecMode             bool
+	bufSize, bufCap        int
+	started                bool
 }
 
 // NewLastScanner creates a new LastScanner.
@@ -253,17 +268,47 @@ func (lsc *lastScanner) Scan() bool {
 		lsc.info = newInfo(lsc.bufSize, lsc.bufCap)
 		lsc.nextInfo = newInfo(lsc.bufSize, lsc.bufCap)
 
+		//scan two tokens (one ahead)
 		scanRes := lsc.Scanner.Scan()
 		lsc.info.update(lsc.Scanner, scanRes)
 		nextScanRes := lsc.Scanner.Scan()
 		lsc.nextInfo.update(lsc.Scanner, nextScanRes)
+
 		lsc.started = true
-		return lsc.info.ScanResult
+	} else {
+		lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
+		nextScanRes2 := lsc.Scanner.Scan()
+		lsc.nextInfo.update(lsc.Scanner, nextScanRes2)
 	}
-	lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
-	nextScanRes2 := lsc.Scanner.Scan()
-	lsc.nextInfo.update(lsc.Scanner, nextScanRes2)
-	return lsc.info.ScanResult
+
+	if !lsc.info.ScanResult {
+		lsc.consecNum = 0
+		lsc.consecBegin, lsc.consecEnd = false, false
+		return false
+	}
+
+	consecModeHasNowStarted := false
+	if !lsc.consecMode {
+		lsc.consecNum = 0
+		lsc.consecBegin, lsc.consecEnd = false, false
+		if lsc.info.Match {
+			consecModeHasNowStarted = true
+			lsc.consecBegin = true
+			lsc.consecMode = true
+		}
+	}
+	if lsc.consecMode {
+		lsc.consecNum++
+		if !lsc.info.isConsecMatch(lsc.nextInfo) {
+			lsc.consecEnd = true
+			lsc.consecMode = false
+		}
+		if !consecModeHasNowStarted {
+			lsc.consecBegin = false
+		}
+	}
+
+	return true
 }
 
 func (lsc *lastScanner) Text() string {
@@ -292,4 +337,16 @@ func (lsc *lastScanner) Match() bool {
 
 func (lsc *lastScanner) Last() bool {
 	return lsc.nextInfo.ScanResult == false
+}
+
+func (lsc *lastScanner) BeginConsecutive() bool {
+	return lsc.consecBegin
+}
+
+func (lsc *lastScanner) EndConsecutive() bool {
+	return lsc.consecEnd
+}
+
+func (lsc *lastScanner) NumConsecutive() int {
+	return lsc.consecNum
 }

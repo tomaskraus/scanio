@@ -221,3 +221,126 @@ func ExampleNewByteFilterScanner() {
 	// 1234
 	// 123456
 }
+
+// -----------------------------------------------------------------------
+
+func ExampleLastScanner_NumConsecutive() {
+
+	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
+	// let's match words beginning with "1"
+	sc := NewLastScanner(
+		NewByteRuleScanner(
+			NewScanner(strings.NewReader(input)),
+			func(input []byte) bool {
+				return (input[0] == []byte("1")[0])
+			}))
+
+	// Set the split function for the scanning operation.
+	sc.Split(bufio.ScanWords)
+
+	for sc.Scan() {
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	}
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+
+	// Output:
+	// 1: "34", false, false, 0
+	// 2: "235", false, false, 0
+	// 3: "1234", true, true, 1
+	// 4: "5678", false, false, 0
+	// 5: "123456", true, false, 1
+	// 6: "145", false, false, 2
+	// 7: "1", false, true, 3
+	// 8: "2", false, false, 0
+	// 9: "15678", true, false, 1
+	// 10: "123", false, true, 2
+	// 10: "", false, false, 0
+}
+
+func ExampleLastScanner_NumConsecutive2() {
+
+	const input = "34 235 1234"
+	// let's match words beginning with "1"
+	sc := NewLastScanner(
+		NewScanner(strings.NewReader(input)),
+	)
+
+	// Set the split function for the scanning operation.
+	sc.Split(bufio.ScanWords)
+
+	for sc.Scan() {
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	}
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+
+	// Output:
+	// 1: "34", true, false, 1
+	// 2: "235", false, false, 2
+	// 3: "1234", false, true, 3
+	// 3: "", false, false, 0
+}
+
+func lastConsecutiveMatch(t *testing.T) {
+
+	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
+	lastConsecutives := []bool{false, false, false, false, false, false, false, false, false, false}
+	// let's filter words beginning with "1"
+	scanner := NewLastScanner(
+		NewScanner(strings.NewReader(input)))
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+
+	for _, v := range lastConsecutives {
+		scanner.Scan()
+		if scanner.EndConsecutive() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+		}
+	}
+}
+
+func TestLastConsecutiveMatchRuled(t *testing.T) {
+
+	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
+	lastConsecutives := []bool{false, false, true, false, false, false, true, false, false, true}
+	// let's filter words beginning with "1"
+	scanner := NewLastScanner(
+		NewByteRuleScanner(
+			NewScanner(strings.NewReader(input)),
+			func(input []byte) bool {
+				return (input[0] == []byte("1")[0])
+			}))
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+
+	for _, v := range lastConsecutives {
+		scanner.Scan()
+		if scanner.EndConsecutive() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+		}
+	}
+}
+
+func TestLastConsecutiveMatchFilter(t *testing.T) {
+
+	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
+	lastConsecutives := []bool{true, false, false, true, false, true}
+	// let's filter words beginning with "1"
+	scanner := NewLastScanner(
+		NewByteFilterScanner(
+			NewScanner(strings.NewReader(input)),
+			func(input []byte) bool {
+				return (input[0] == []byte("1")[0])
+			}))
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+
+	for _, v := range lastConsecutives {
+		scanner.Scan()
+		if scanner.EndConsecutive() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+		}
+	}
+}
