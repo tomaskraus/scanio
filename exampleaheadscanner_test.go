@@ -21,19 +21,19 @@ func ExampleNewAheadScanner_basic() {
 	asc := scanio.NewAheadScanner(sc)
 
 	for asc.Scan() {
-		fmt.Printf("%v:%q", asc.Num(), asc.Text())
+		fmt.Printf("%v:%q", asc.Index(), asc.Text())
 		if !asc.Last() {
 			fmt.Print(", ")
 		}
 	}
 
 	// Output:
-	// 1:"One", 2:"two", 3:"three"
+	// 0:"One", 1:"two", 2:"three"
 }
 
 func ExampleNewAheadScanner_consecutive() {
 	// Let's find all consecutive sequences of tokens beginning with an "a".
-	// Print at what token number these sequences begins and ends and print also a number of tokens in each sequence.
+	// Print at what token index these sequences begins and ends and print also a number of tokens in each sequence.
 	// All items will be comma-separated but the last one.
 
 	r := strings.NewReader("One apple two amazing apples three ones.")
@@ -52,11 +52,11 @@ func ExampleNewAheadScanner_consecutive() {
 	beginSeq := 0
 	for asc.Scan() {
 		if asc.BeginConsecutive() {
-			beginSeq = asc.Num()
+			beginSeq = asc.Index()
 		}
 		// there is no "else", as the matching-token-sequence can begin and end at the same token
 		if asc.EndConsecutive() {
-			fmt.Printf("%v:%v-%v", beginSeq, asc.Num(), asc.NumConsecutive())
+			fmt.Printf("%v:%v-%v", beginSeq, asc.Index(), asc.NumConsecutive())
 			if !asc.Last() {
 				fmt.Print(", ")
 			}
@@ -64,5 +64,5 @@ func ExampleNewAheadScanner_consecutive() {
 	}
 
 	// Output:
-	// 2:2-1, 4:5-2
+	// 1:1-1, 3:4-2
 }

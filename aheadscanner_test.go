@@ -15,15 +15,15 @@ func TestAheadScannerEmpty(t *testing.T) {
 	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
-		{false, 0, false, "", true},
-		{false, 0, false, "", true},
-		{false, 0, false, "", true},
+		{false, -1, false, "", true},
+		{false, -1, false, "", true},
+		{false, -1, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
 		}
 	}
 }
@@ -33,15 +33,15 @@ func TestAheadScannerOneLine(t *testing.T) {
 	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
-		{true, 1, true, "one line", true},
-		{false, 1, false, "", true},
-		{false, 1, false, "", true},
+		{true, 0, true, "one line", true},
+		{false, 0, false, "", true},
+		{false, 0, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
 		}
 	}
 }
@@ -57,26 +57,26 @@ func TestAheadScannerFull(t *testing.T) {
 	scn := NewAheadScanner(NewScanner(f))
 
 	expected := []resultL{
-		{true, 1, true, "this is a simple file", false},
-		{true, 2, true, "next line is empty", false},
-		{true, 3, true, "", false},
-		{true, 4, true, "next line has two spaces", false},
-		{true, 5, true, "  ", false},
-		{true, 6, true, "# bash-like comment", false},
-		{true, 7, true, "line with two trailing spaces  ", false},
-		{true, 8, true, " line with one leading space", false},
-		{true, 9, true, " line with one leading and one trailing space ", false},
-		{true, 10, true, "# bash-like comment 2 ", false},
-		{true, 11, true, "last line", true},
-		{false, 11, false, "", true},
-		{false, 11, false, "", true},
-		{false, 11, false, "", true},
+		{true, 0, true, "this is a simple file", false},
+		{true, 1, true, "next line is empty", false},
+		{true, 2, true, "", false},
+		{true, 3, true, "next line has two spaces", false},
+		{true, 4, true, "  ", false},
+		{true, 5, true, "# bash-like comment", false},
+		{true, 6, true, "line with two trailing spaces  ", false},
+		{true, 7, true, " line with one leading space", false},
+		{true, 8, true, " line with one leading and one trailing space ", false},
+		{true, 9, true, "# bash-like comment 2 ", false},
+		{true, 10, true, "last line", true},
+		{false, 10, false, "", true},
+		{false, 10, false, "", true},
+		{false, 10, false, "", true},
 	}
 	for _, v := range expected {
-		res, num, match, text, last := scn.Scan(), scn.Num(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text || last != v.last {
-			t.Errorf("should be %v, is %v", v, resultL{res, num, match, text, last})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
+			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
 		}
 	}
 }
@@ -94,13 +94,13 @@ func ExampleNewRuleScanner() {
 
 	for scn.Scan() {
 		if scn.Last() {
-			fmt.Printf("(%d, %q).", scn.Num(), scn.Text())
+			fmt.Printf("(%d, %q).", scn.Index(), scn.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", scn.Num(), scn.Text())
+			fmt.Printf("(%d, %q), ", scn.Index(), scn.Text())
 		}
 	}
 	// Output:
-	// (2, "# comment 1"), (4, "#comment2").
+	// (1, "# comment 1"), (3, "#comment2").
 }
 
 func ExampleNewFilterScanner() {
@@ -115,13 +115,13 @@ func ExampleNewFilterScanner() {
 
 	for scn.Scan() {
 		if scn.Last() {
-			fmt.Printf("(%d, %q).", scn.Num(), scn.Text())
+			fmt.Printf("(%d, %q).", scn.Index(), scn.Text())
 		} else {
-			fmt.Printf("(%d, %q), ", scn.Num(), scn.Text())
+			fmt.Printf("(%d, %q), ", scn.Index(), scn.Text())
 		}
 	}
 	// Output:
-	// (2, "# comment 1"), (4, "#comment2").
+	// (1, "# comment 1"), (3, "#comment2").
 }
 
 func TestOnlyNotMatchScannerEmpty(t *testing.T) {
@@ -130,15 +130,15 @@ func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 	scn := NewOnlyNotMatchScanner(NewScanner(f))
 
 	expected := []result{
-		{false, 0, false, ""},
-		{false, 0, false, ""},
-		{false, 0, false, ""},
+		{false, -1, false, ""},
+		{false, -1, false, ""},
+		{false, -1, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
 		}
 	}
 }
@@ -153,15 +153,15 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 	scn := NewOnlyNotMatchScanner(NewScanner(f))
 
 	expected := []result{
-		{false, 11, false, ""},
-		{false, 11, false, ""},
-		{false, 11, false, ""},
+		{false, 10, false, ""},
+		{false, 10, false, ""},
+		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
 		}
 	}
 }
@@ -179,24 +179,24 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 	}))
 
 	expected := []result{
-		{true, 1, false, "this is a simple file"},
-		{true, 2, false, "next line is empty"},
-		{true, 3, false, ""},
-		{true, 4, false, "next line has two spaces"},
-		{true, 5, false, "  "},
-		{true, 7, false, "line with two trailing spaces  "},
-		{true, 8, false, " line with one leading space"},
-		{true, 9, false, " line with one leading and one trailing space "},
-		{true, 11, false, "last line"},
-		{false, 11, false, ""},
-		{false, 11, false, ""},
-		{false, 11, false, ""},
+		{true, 0, false, "this is a simple file"},
+		{true, 1, false, "next line is empty"},
+		{true, 2, false, ""},
+		{true, 3, false, "next line has two spaces"},
+		{true, 4, false, "  "},
+		{true, 6, false, "line with two trailing spaces  "},
+		{true, 7, false, " line with one leading space"},
+		{true, 8, false, " line with one leading and one trailing space "},
+		{true, 10, false, "last line"},
+		{false, 10, false, ""},
+		{false, 10, false, ""},
+		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, num, match, text := scn.Scan(), scn.Num(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
 
-		if res != v.canParse || num != v.num || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, num, match, text})
+		if res != v.canParse || index != v.index || match != v.match || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
 		}
 	}
 }
@@ -240,22 +240,22 @@ func ExampleAheadScanner_NumConsecutive() {
 	sc.Split(bufio.ScanWords)
 
 	for sc.Scan() {
-		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
 	}
-	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
 
 	// Output:
-	// 1: "34", false, false, 0
-	// 2: "235", false, false, 0
-	// 3: "1234", true, true, 1
-	// 4: "5678", false, false, 0
-	// 5: "123456", true, false, 1
-	// 6: "145", false, false, 2
-	// 7: "1", false, true, 3
-	// 8: "2", false, false, 0
-	// 9: "15678", true, false, 1
-	// 10: "123", false, true, 2
-	// 10: "", false, false, 0
+	// 0: "34", false, false, 0
+	// 1: "235", false, false, 0
+	// 2: "1234", true, true, 1
+	// 3: "5678", false, false, 0
+	// 4: "123456", true, false, 1
+	// 5: "145", false, false, 2
+	// 6: "1", false, true, 3
+	// 7: "2", false, false, 0
+	// 8: "15678", true, false, 1
+	// 9: "123", false, true, 2
+	// 9: "", false, false, 0
 }
 
 func ExampleAheadScanner_NumConsecutive2() {
@@ -270,15 +270,15 @@ func ExampleAheadScanner_NumConsecutive2() {
 	sc.Split(bufio.ScanWords)
 
 	for sc.Scan() {
-		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
 	}
-	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Num(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
 
 	// Output:
-	// 1: "34", true, false, 1
-	// 2: "235", false, false, 2
-	// 3: "1234", false, true, 3
-	// 3: "", false, false, 0
+	// 0: "34", true, false, 1
+	// 1: "235", false, false, 2
+	// 2: "1234", false, true, 3
+	// 2: "", false, false, 0
 }
 
 func lastConsecutiveMatch(t *testing.T) {
@@ -295,7 +295,7 @@ func lastConsecutiveMatch(t *testing.T) {
 	for _, v := range lastConsecutives {
 		scanner.Scan()
 		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
 		}
 	}
 }
@@ -318,7 +318,7 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 	for _, v := range lastConsecutives {
 		scanner.Scan()
 		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
 		}
 	}
 }
@@ -341,7 +341,7 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 	for _, v := range lastConsecutives {
 		scanner.Scan()
 		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Num(), v, scanner.EndConsecutive())
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
 		}
 	}
 }

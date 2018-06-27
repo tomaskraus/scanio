@@ -17,19 +17,20 @@ type info struct {
 	ScanRes bool // holds result of Scanner.Scan()
 	Text    string
 	Bytes   []byte
-	Num     int
+	Index   int
 	Match   bool
 }
 
 func newInfo(bufLen, bufCap int) *info {
 	i := info{}
 	i.Bytes = make([]byte, bufLen, bufCap)
+	i.Index = -1
 	return &i
 }
 
 // isConsecEnd returns true if the next Info has a consecutive match
 func (i *info) isConsecMatch(nextI *info) bool {
-	if i.Match && nextI.Match && i.Num+1 == nextI.Num {
+	if i.Match && nextI.Match && i.Index+1 == nextI.Index {
 		// next token matches
 		return true
 	}
@@ -38,7 +39,7 @@ func (i *info) isConsecMatch(nextI *info) bool {
 
 // update makes a snapshot of Scanner's current state.
 func (i *info) update(sc Scanner, scResult bool) {
-	i.Text, i.Num, i.Match, i.ScanRes = sc.Text(), sc.Num(), sc.Match(), scResult
+	i.Text, i.Index, i.Match, i.ScanRes = sc.Text(), sc.Index(), sc.Match(), scResult
 	// preserve the underlying scanner's buffer
 	srcLen := len(sc.Bytes())
 	i.Bytes = i.Bytes[:srcLen]
@@ -133,8 +134,8 @@ func (sc *aheadScanner) Bytes() []byte {
 	return sc.info.Bytes
 }
 
-func (sc *aheadScanner) Num() int {
-	return sc.info.Num
+func (sc *aheadScanner) Index() int {
+	return sc.info.Index
 }
 func (sc *aheadScanner) Match() bool {
 	return sc.info.Match
