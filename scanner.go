@@ -79,7 +79,7 @@ func (sc *readerScanner) Num() int {
 //--------------------------------------------------------------------------------
 
 // MatchRule for NewRuleScanner.
-type MatchRule func(token string) (matched bool)
+type MatchRule func(token []byte) (matched bool)
 
 type ruleScanner struct {
 	Scanner
@@ -97,44 +97,13 @@ func NewRuleScanner(sc Scanner, rule MatchRule) Scanner {
 
 func (sc *ruleScanner) Scan() bool {
 	if sc.Scanner.Scan() {
-		sc.matched = sc.rule(sc.Scanner.Text())
-		return true
-	}
-	return false
-}
-
-func (sc *ruleScanner) Match() bool {
-	return sc.matched
-}
-
-//--------------------------------------------------------------------------------
-
-// MatchByteRule for NewByteRuleScanner.
-type MatchByteRule func(token []byte) (matched bool)
-
-type byteRuleScanner struct {
-	Scanner
-	rule    MatchByteRule
-	matched bool
-}
-
-// NewByteRuleScanner returns new, rule-based Scanner.
-func NewByteRuleScanner(sc Scanner, rule MatchByteRule) Scanner {
-	return Scanner(&byteRuleScanner{
-		Scanner: sc,
-		rule:    rule,
-	})
-}
-
-func (sc *byteRuleScanner) Scan() bool {
-	if sc.Scanner.Scan() {
 		sc.matched = sc.rule(sc.Scanner.Bytes())
 		return true
 	}
 	return false
 }
 
-func (sc *byteRuleScanner) Match() bool {
+func (sc *ruleScanner) Match() bool {
 	return sc.matched
 }
 
@@ -187,9 +156,4 @@ func (sc *onlyNotMatchScanner) Scan() bool {
 // NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
 func NewFilterScanner(sc Scanner, rule MatchRule) Scanner {
 	return NewOnlyMatchScanner(NewRuleScanner(sc, rule))
-}
-
-// NewByteFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
-func NewByteFilterScanner(sc Scanner, rule MatchByteRule) Scanner {
-	return NewOnlyMatchScanner(NewByteRuleScanner(sc, rule))
 }

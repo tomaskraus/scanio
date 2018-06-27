@@ -2,6 +2,7 @@ package scanio
 
 import (
 	"bufio"
+	"bytes"
 	"os"
 	"strings"
 	"testing"
@@ -109,8 +110,8 @@ func TestRuleScanner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	scn := NewRuleScanner(NewScanner(f), func(in string) bool {
-		return strings.HasPrefix(in, "#")
+	scn := NewRuleScanner(NewScanner(f), func(b []byte) bool {
+		return bytes.HasPrefix(b, []byte("#"))
 	})
 
 	expected := []result{
@@ -141,8 +142,8 @@ func TestRuleScanner(t *testing.T) {
 func TestRuleScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewRuleScanner(NewScanner(f), func(in string) bool {
-		return strings.HasPrefix(in, "#")
+	scn := NewRuleScanner(NewScanner(f), func(b []byte) bool {
+		return bytes.HasPrefix(b, []byte("#"))
 	})
 
 	expected := []result{
@@ -166,8 +167,8 @@ func TestRuleScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewRuleScanner(NewScanner(f), func(in string) bool {
-		return strings.HasPrefix(in, "#")
+	scn := NewRuleScanner(NewScanner(f), func(b []byte) bool {
+		return bytes.HasPrefix(b, []byte("#"))
 	})
 
 	expected := []result{
@@ -256,8 +257,8 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyMatchScanner(NewRuleScanner(NewScanner(f), func(in string) bool {
-		return strings.HasPrefix(in, "#")
+	scn := NewOnlyMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) bool {
+		return bytes.HasPrefix(b, []byte("#"))
 	}))
 
 	expected := []result{

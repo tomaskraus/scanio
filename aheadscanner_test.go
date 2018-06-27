@@ -2,6 +2,7 @@ package scanio
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -87,8 +88,8 @@ func ExampleNewRuleScanner() {
 		NewOnlyMatchScanner(
 			NewRuleScanner(
 				NewScanner(f),
-				func(s string) bool {
-					return strings.HasPrefix(s, "#")
+				func(b []byte) bool {
+					return bytes.HasPrefix(b, []byte("#"))
 				})))
 
 	for scn.Scan() {
@@ -108,8 +109,8 @@ func ExampleNewFilterScanner() {
 	scn := NewAheadScanner(
 		NewFilterScanner(
 			NewScanner(f),
-			func(s string) bool {
-				return strings.HasPrefix(s, "#")
+			func(b []byte) bool {
+				return bytes.HasPrefix(b, []byte("#"))
 			}))
 
 	for scn.Scan() {
@@ -173,8 +174,8 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(in string) bool {
-		return strings.HasPrefix(in, "#")
+	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) bool {
+		return bytes.HasPrefix(b, []byte("#"))
 	}))
 
 	expected := []result{
@@ -204,7 +205,7 @@ func ExampleNewByteFilterScanner() {
 
 	const input = "1234 5678 123456"
 	// let's filter words beginning with "1"
-	scanner := NewByteFilterScanner(
+	scanner := NewFilterScanner(
 		NewScanner(strings.NewReader(input)),
 		func(input []byte) bool {
 			return (input[0] == []byte("1")[0])
@@ -229,7 +230,7 @@ func ExampleAheadScanner_NumConsecutive() {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	// let's match words beginning with "1"
 	sc := NewAheadScanner(
-		NewByteRuleScanner(
+		NewRuleScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {
 				return (input[0] == []byte("1")[0])
@@ -305,7 +306,7 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 	lastConsecutives := []bool{false, false, true, false, false, false, true, false, false, true}
 	// let's filter words beginning with "1"
 	scanner := NewAheadScanner(
-		NewByteRuleScanner(
+		NewRuleScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {
 				return (input[0] == []byte("1")[0])
@@ -328,7 +329,7 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 	lastConsecutives := []bool{true, false, false, true, false, true}
 	// let's filter words beginning with "1"
 	scanner := NewAheadScanner(
-		NewByteFilterScanner(
+		NewFilterScanner(
 			NewScanner(strings.NewReader(input)),
 			func(input []byte) bool {
 				return (input[0] == []byte("1")[0])
