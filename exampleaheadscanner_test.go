@@ -33,8 +33,8 @@ func ExampleNewAheadScanner_basic() {
 
 func ExampleNewAheadScanner_consecutive() {
 	// Let's find all consecutive sequences of tokens beginning with an "a".
-	// Print at what token index these sequences begins and ends and print also a number of tokens in each sequence.
-	// All items will be comma-separated but the last one.
+	// Print ranges of these sequences and print also a number of tokens in each sequence.
+	// All items will be semicolon-separated but the last one.
 
 	r := strings.NewReader("One apple two amazing apples three ones.")
 
@@ -56,13 +56,16 @@ func ExampleNewAheadScanner_consecutive() {
 		}
 		// there is no "else", as the matching-token-sequence can begin and end at the same token
 		if asc.EndConsecutive() {
-			fmt.Printf("%v:%v-%v", beginSeq, asc.Index(), asc.NumConsecutive())
+			fmt.Printf("[%v:%v],%v", beginSeq,
+				asc.Index()+1, // slice-like range
+				asc.NumConsecutive(),
+			)
 			if !asc.Last() {
-				fmt.Print(", ")
+				fmt.Print("; ")
 			}
 		}
 	}
 
 	// Output:
-	// 1:1-1, 3:4-2
+	// [1:2],1; [3:5],2
 }
