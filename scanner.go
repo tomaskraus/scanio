@@ -38,8 +38,8 @@ func NewScanner(r io.Reader) Scanner {
 	})
 }
 
-func (sc *readerScanner) Buffer(buf []byte, max int) {
-	sc.scn.Buffer(buf, max)
+func (sc *readerScanner) Buffer(b []byte, max int) {
+	sc.scn.Buffer(b, max)
 }
 
 func (sc *readerScanner) Scan() bool {
@@ -79,63 +79,63 @@ func (sc *readerScanner) Num() int {
 //--------------------------------------------------------------------------------
 
 // MatchRule for NewRuleScanner.
-type MatchRule func(input string) bool
+type MatchRule func(token string) (matched bool)
 
 type ruleScanner struct {
 	Scanner
-	rule   MatchRule
-	matchR bool
+	rule    MatchRule
+	matched bool
 }
 
 // NewRuleScanner returns new, rule-based Scanner.
-func NewRuleScanner(scn Scanner, rule MatchRule) Scanner {
+func NewRuleScanner(sc Scanner, rule MatchRule) Scanner {
 	return Scanner(&ruleScanner{
-		Scanner: scn,
+		Scanner: sc,
 		rule:    rule,
 	})
 }
 
 func (sc *ruleScanner) Scan() bool {
 	if sc.Scanner.Scan() {
-		sc.matchR = sc.rule(sc.Scanner.Text())
+		sc.matched = sc.rule(sc.Scanner.Text())
 		return true
 	}
 	return false
 }
 
 func (sc *ruleScanner) Match() bool {
-	return sc.matchR
+	return sc.matched
 }
 
 //--------------------------------------------------------------------------------
 
 // MatchByteRule for NewByteRuleScanner.
-type MatchByteRule func(input []byte) bool
+type MatchByteRule func(token []byte) (matched bool)
 
 type byteRuleScanner struct {
 	Scanner
-	rule   MatchByteRule
-	matchR bool
+	rule    MatchByteRule
+	matched bool
 }
 
 // NewByteRuleScanner returns new, rule-based Scanner.
-func NewByteRuleScanner(scn Scanner, rule MatchByteRule) Scanner {
+func NewByteRuleScanner(sc Scanner, rule MatchByteRule) Scanner {
 	return Scanner(&byteRuleScanner{
-		Scanner: scn,
+		Scanner: sc,
 		rule:    rule,
 	})
 }
 
 func (sc *byteRuleScanner) Scan() bool {
 	if sc.Scanner.Scan() {
-		sc.matchR = sc.rule(sc.Scanner.Bytes())
+		sc.matched = sc.rule(sc.Scanner.Bytes())
 		return true
 	}
 	return false
 }
 
 func (sc *byteRuleScanner) Match() bool {
-	return sc.matchR
+	return sc.matched
 }
 
 //--------------------------------------------------------------------------------
@@ -145,15 +145,15 @@ type onlyMatchScanner struct {
 }
 
 // NewOnlyMatchScanner returns new Scanner.
-func NewOnlyMatchScanner(scn Scanner) Scanner {
+func NewOnlyMatchScanner(sc Scanner) Scanner {
 	return Scanner(&onlyMatchScanner{
-		Scanner: scn,
+		Scanner: sc,
 	})
 }
 
-func (scn *onlyMatchScanner) Scan() bool {
-	for scn.Scanner.Scan() {
-		if scn.Scanner.Match() {
+func (sc *onlyMatchScanner) Scan() bool {
+	for sc.Scanner.Scan() {
+		if sc.Scanner.Match() {
 			return true
 		}
 		continue
@@ -166,15 +166,15 @@ type onlyNotMatchScanner struct {
 }
 
 // NewOnlyNotMatchScanner returns new Scanner.
-func NewOnlyNotMatchScanner(scn Scanner) Scanner {
+func NewOnlyNotMatchScanner(sc Scanner) Scanner {
 	return Scanner(&onlyNotMatchScanner{
-		Scanner: scn,
+		Scanner: sc,
 	})
 }
 
-func (scn *onlyNotMatchScanner) Scan() bool {
-	for scn.Scanner.Scan() {
-		if scn.Scanner.Match() {
+func (sc *onlyNotMatchScanner) Scan() bool {
+	for sc.Scanner.Scan() {
+		if sc.Scanner.Match() {
 			continue
 		}
 		return true
@@ -185,111 +185,11 @@ func (scn *onlyNotMatchScanner) Scan() bool {
 // ---------------------------------------------------------------------------
 
 // NewFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
-func NewFilterScanner(scn Scanner, rule MatchRule) Scanner {
-	return NewOnlyMatchScanner(NewRuleScanner(scn, rule))
+func NewFilterScanner(sc Scanner, rule MatchRule) Scanner {
+	return NewOnlyMatchScanner(NewRuleScanner(sc, rule))
 }
 
 // NewByteFilterScanner creates a Scanner that outputs only tokens matched by a rule provided.
-func NewByteFilterScanner(scn Scanner, rule MatchByteRule) Scanner {
-	return NewOnlyMatchScanner(NewByteRuleScanner(scn, rule))
-}
-
-// ---------------------------------------------------------------------------
-
-// LastScanner can tell if the current token is the last one.
-// Does the one token forward-read to achieve this.
-type LastScanner interface {
-	Scanner
-	Last() bool
-}
-
-// info stores the Scanner's current state.
-type info struct {
-	ScanResult bool // holds result of Scanner.Scan()
-	Text       string
-	Bytes      []byte
-	Num        int
-	Match      bool
-}
-
-func newInfo(bufferLen, bufferCap int) *info {
-	i := info{}
-	i.Bytes = make([]byte, bufferLen, bufferCap)
-	return &i
-}
-
-// updateInfo makes a snapshot of Scanner's current state.
-func (info *info) update(scn Scanner, scResult bool) {
-	info.Text, info.Num, info.Match, info.ScanResult = scn.Text(), scn.Num(), scn.Match(), scResult
-	// preserve the underlying scanner's buffer
-	srcLen := len(scn.Bytes())
-	info.Bytes = info.Bytes[:srcLen]
-	copy(info.Bytes, scn.Bytes())
-}
-
-const (
-	startBufSize = 4096 // Size of initial allocation for buffer.   from golang.org/src/bufio/scan.go
-)
-
-type lastScanner struct {
-	Scanner
-	info, nextInfo  *info
-	bufSize, bufCap int
-	started         bool
-}
-
-// NewLastScanner creates a new LastScanner.
-func NewLastScanner(scn Scanner) LastScanner {
-	return LastScanner(&lastScanner{
-		Scanner: scn,
-		bufSize: startBufSize,
-		bufCap:  bufio.MaxScanTokenSize,
-	})
-}
-
-func (lsc *lastScanner) Scan() bool {
-	if !lsc.started {
-		//initialize buffers
-		lsc.info = newInfo(lsc.bufSize, lsc.bufCap)
-		lsc.nextInfo = newInfo(lsc.bufSize, lsc.bufCap)
-
-		scanRes := lsc.Scanner.Scan()
-		lsc.info.update(lsc.Scanner, scanRes)
-		nextScanRes := lsc.Scanner.Scan()
-		lsc.nextInfo.update(lsc.Scanner, nextScanRes)
-		lsc.started = true
-		return lsc.info.ScanResult
-	}
-	lsc.info, lsc.nextInfo = lsc.nextInfo, lsc.info
-	nextScanRes2 := lsc.Scanner.Scan()
-	lsc.nextInfo.update(lsc.Scanner, nextScanRes2)
-	return lsc.info.ScanResult
-}
-
-func (lsc *lastScanner) Text() string {
-	return lsc.info.Text
-}
-
-func (lsc *lastScanner) Buffer(buf []byte, max int) {
-	lsc.Scanner.Buffer(buf, max)
-	// memorize size values for future creation of prev/next buffers
-	lsc.bufSize, lsc.bufCap = len(buf), max
-	if lsc.bufCap < lsc.bufSize {
-		lsc.bufCap = lsc.bufSize
-	}
-}
-
-func (lsc *lastScanner) Bytes() []byte {
-	return lsc.info.Bytes
-}
-
-func (lsc *lastScanner) Num() int {
-	return lsc.info.Num
-}
-func (lsc *lastScanner) Match() bool {
-	return lsc.info.Match
-}
-
-func (lsc *lastScanner) Last() bool {
-	return lsc.nextInfo.ScanResult == false
+func NewByteFilterScanner(sc Scanner, rule MatchByteRule) Scanner {
+	return NewOnlyMatchScanner(NewByteRuleScanner(sc, rule))
 }

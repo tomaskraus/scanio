@@ -14,13 +14,13 @@ func Example() {
 	sc.Split(bufio.ScanWords)
 
 	// chain the next scanner
-	lsc := scanio.NewLastScanner(sc)
+	asc := scanio.NewAheadScanner(sc)
 
-	for lsc.Scan() {
-		if lsc.Last() {
-			fmt.Printf("%v:%q!", lsc.Num(), lsc.Text())
+	for asc.Scan() {
+		if asc.Last() {
+			fmt.Printf("%v:%q!", asc.Num(), asc.Text())
 		} else {
-			fmt.Printf("%v:%q, ", lsc.Num(), lsc.Text())
+			fmt.Printf("%v:%q, ", asc.Num(), asc.Text())
 		}
 	}
 
