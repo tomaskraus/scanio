@@ -1,4 +1,4 @@
-// Package scanio provides bufio.Scanner wrappers with filtering, chaining and last-token ahead reading.
+// Package scanio provides bufio.Scanner chainable wrappers with read-ahead and filtering.
 //
 package scanio
 
