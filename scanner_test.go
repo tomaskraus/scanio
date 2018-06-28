@@ -11,16 +11,16 @@ import (
 type result struct {
 	canParse bool
 	index    int
-	match    bool
+	isMatch  bool
 	text     string
 }
 
 type resultL struct {
 	canParse bool
 	index    int
-	match    bool
+	isMatch  bool
 	text     string
-	last     bool
+	isLast   bool
 }
 
 func TestScanWords(t *testing.T) {
@@ -38,10 +38,10 @@ func TestScanWords(t *testing.T) {
 		{false, 2, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -58,10 +58,10 @@ func TestReaderScannerEmpty(t *testing.T) {
 		{false, -1, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -93,10 +93,10 @@ func TestScannerFile(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -131,10 +131,10 @@ func TestRuleScanner(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -152,10 +152,10 @@ func TestRuleScannerEmpty(t *testing.T) {
 		{false, -1, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -188,10 +188,10 @@ func TestRuleScannerFull(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -207,10 +207,10 @@ func TestOnlyMatchScannerEmpty(t *testing.T) {
 		{false, -1, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -241,10 +241,10 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
@@ -269,10 +269,10 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
+		res, index, isMatch, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
-		if res != v.canParse || index != v.index || match != v.match || text != v.text {
-			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
+		if res != v.canParse || index != v.index || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, index, isMatch, text})
 		}
 	}
 }
