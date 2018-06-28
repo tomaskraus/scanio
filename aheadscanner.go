@@ -6,10 +6,10 @@ import "bufio"
 // Does the one token forward-read to achieve this.
 type AheadScanner interface {
 	Scanner
-	Last() bool
-	BeginConsecutive() bool // begin of consecutive positive-match sequence (even if its length is 1)
-	EndConsecutive() bool   // end of consecutive positive-match sequence (even if its length is 1)
-	NumConsecutive() int    // number of consecutive positive matches
+	IsLast() bool
+	IsConsecutiveBegin() bool // begin of consecutive positive-match sequence (even if its length is 1)
+	IsConsecutiveEnd() bool   // end of consecutive positive-match sequence (even if its length is 1)
+	NumConsecutive() int      // number of consecutive positive matches
 }
 
 // info stores the Scanner's current state.
@@ -18,7 +18,7 @@ type info struct {
 	Text    string
 	Bytes   []byte
 	Index   int
-	Match   bool
+	IsMatch bool
 }
 
 func newInfo(bufLen, bufCap int) *info {
@@ -30,7 +30,7 @@ func newInfo(bufLen, bufCap int) *info {
 
 // isConsecEnd returns true if the next Info has a consecutive match
 func (i *info) isConsecMatch(nextI *info) bool {
-	if i.Match && nextI.Match && i.Index+1 == nextI.Index {
+	if i.IsMatch && nextI.IsMatch && i.Index+1 == nextI.Index {
 		// next token matches
 		return true
 	}
@@ -39,7 +39,7 @@ func (i *info) isConsecMatch(nextI *info) bool {
 
 // update makes a snapshot of Scanner's current state.
 func (i *info) update(sc Scanner, scResult bool) {
-	i.Text, i.Index, i.Match, i.ScanRes = sc.Text(), sc.Index(), sc.Match(), scResult
+	i.Text, i.Index, i.IsMatch, i.ScanRes = sc.Text(), sc.Index(), sc.IsMatch(), scResult
 	// preserve the underlying scanner's buffer
 	srcLen := len(sc.Bytes())
 	i.Bytes = i.Bytes[:srcLen]
@@ -97,7 +97,7 @@ func (sc *aheadScanner) Scan() bool {
 	if !sc.consecMode {
 		sc.consecNum = 0
 		sc.consecBegin, sc.consecEnd = false, false
-		if sc.info.Match {
+		if sc.info.IsMatch {
 			sc.consecBegin = true
 			sc.consecMode = true
 		}
@@ -137,19 +137,19 @@ func (sc *aheadScanner) Bytes() []byte {
 func (sc *aheadScanner) Index() int {
 	return sc.info.Index
 }
-func (sc *aheadScanner) Match() bool {
-	return sc.info.Match
+func (sc *aheadScanner) IsMatch() bool {
+	return sc.info.IsMatch
 }
 
-func (sc *aheadScanner) Last() bool {
+func (sc *aheadScanner) IsLast() bool {
 	return sc.nextInfo.ScanRes == false
 }
 
-func (sc *aheadScanner) BeginConsecutive() bool {
+func (sc *aheadScanner) IsConsecutiveBegin() bool {
 	return sc.consecBegin
 }
 
-func (sc *aheadScanner) EndConsecutive() bool {
+func (sc *aheadScanner) IsConsecutiveEnd() bool {
 	return sc.consecEnd
 }
 

@@ -17,8 +17,8 @@ type Scanner interface {
 	Split(split bufio.SplitFunc)
 	Text() string
 
-	Match() bool // true if a token matches Scanner's MatchRule
-	Index() int  // index of a current token (first token starts from 0). Returns -1 if no tokens are scanned.
+	IsMatch() bool // true if a token matches Scanner's MatchRule
+	Index() int    // index of a current token (first token starts from 0). Returns -1 if no tokens are scanned.
 }
 
 //--------------------------------------------------------------------
@@ -69,7 +69,7 @@ func (sc *readerScanner) Bytes() []byte {
 	return sc.scn.Bytes()
 }
 
-func (sc *readerScanner) Match() bool {
+func (sc *readerScanner) IsMatch() bool {
 	return sc.match
 }
 
@@ -104,7 +104,7 @@ func (sc *ruleScanner) Scan() bool {
 	return false
 }
 
-func (sc *ruleScanner) Match() bool {
+func (sc *ruleScanner) IsMatch() bool {
 	return sc.matched
 }
 
@@ -123,7 +123,7 @@ func NewOnlyMatchScanner(sc Scanner) Scanner {
 
 func (sc *onlyMatchScanner) Scan() bool {
 	for sc.Scanner.Scan() {
-		if sc.Scanner.Match() {
+		if sc.Scanner.IsMatch() {
 			return true
 		}
 		continue
@@ -144,7 +144,7 @@ func NewOnlyNotMatchScanner(sc Scanner) Scanner {
 
 func (sc *onlyNotMatchScanner) Scan() bool {
 	for sc.Scanner.Scan() {
-		if sc.Scanner.Match() {
+		if sc.Scanner.IsMatch() {
 			continue
 		}
 		return true

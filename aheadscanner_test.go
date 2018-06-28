@@ -20,7 +20,7 @@ func TestAheadScannerEmpty(t *testing.T) {
 		{false, -1, false, "", true},
 	}
 	for _, v := range expected {
-		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text(), scn.IsLast()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
@@ -38,7 +38,7 @@ func TestAheadScannerOneLine(t *testing.T) {
 		{false, 0, false, "", true},
 	}
 	for _, v := range expected {
-		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text(), scn.IsLast()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
@@ -73,7 +73,7 @@ func TestAheadScannerFull(t *testing.T) {
 		{false, 10, false, "", true},
 	}
 	for _, v := range expected {
-		res, index, match, text, last := scn.Scan(), scn.Index(), scn.Match(), scn.Text(), scn.Last()
+		res, index, match, text, last := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text(), scn.IsLast()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text || last != v.last {
 			t.Errorf("should be %v, is %v", v, resultL{res, index, match, text, last})
@@ -93,7 +93,7 @@ func ExampleNewRuleScanner() {
 				})))
 
 	for scn.Scan() {
-		if scn.Last() {
+		if scn.IsLast() {
 			fmt.Printf("(%d, %q).", scn.Index(), scn.Text())
 		} else {
 			fmt.Printf("(%d, %q), ", scn.Index(), scn.Text())
@@ -114,7 +114,7 @@ func ExampleNewFilterScanner() {
 			}))
 
 	for scn.Scan() {
-		if scn.Last() {
+		if scn.IsLast() {
 			fmt.Printf("(%d, %q).", scn.Index(), scn.Text())
 		} else {
 			fmt.Printf("(%d, %q), ", scn.Index(), scn.Text())
@@ -135,7 +135,7 @@ func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 		{false, -1, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
@@ -158,7 +158,7 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
@@ -193,7 +193,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		{false, 10, false, ""},
 	}
 	for _, v := range expected {
-		res, index, match, text := scn.Scan(), scn.Index(), scn.Match(), scn.Text()
+		res, index, match, text := scn.Scan(), scn.Index(), scn.IsMatch(), scn.Text()
 
 		if res != v.canParse || index != v.index || match != v.match || text != v.text {
 			t.Errorf("should be %v, is %v", v, result{res, index, match, text})
@@ -240,9 +240,9 @@ func ExampleAheadScanner_NumConsecutive() {
 	sc.Split(bufio.ScanWords)
 
 	for sc.Scan() {
-		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.IsConsecutiveBegin(), sc.IsConsecutiveEnd(), sc.NumConsecutive())
 	}
-	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.IsConsecutiveBegin(), sc.IsConsecutiveEnd(), sc.NumConsecutive())
 
 	// Output:
 	// 0: "34", false, false, 0
@@ -270,9 +270,9 @@ func ExampleAheadScanner_NumConsecutive2() {
 	sc.Split(bufio.ScanWords)
 
 	for sc.Scan() {
-		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+		fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.IsConsecutiveBegin(), sc.IsConsecutiveEnd(), sc.NumConsecutive())
 	}
-	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.BeginConsecutive(), sc.EndConsecutive(), sc.NumConsecutive())
+	fmt.Printf("%v: %q, %v, %v, %d\n", sc.Index(), sc.Bytes(), sc.IsConsecutiveBegin(), sc.IsConsecutiveEnd(), sc.NumConsecutive())
 
 	// Output:
 	// 0: "34", true, false, 1
@@ -294,8 +294,8 @@ func lastConsecutiveMatch(t *testing.T) {
 
 	for _, v := range lastConsecutives {
 		scanner.Scan()
-		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
+		if scanner.IsConsecutiveEnd() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.IsConsecutiveEnd())
 		}
 	}
 }
@@ -317,8 +317,8 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 
 	for _, v := range lastConsecutives {
 		scanner.Scan()
-		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
+		if scanner.IsConsecutiveEnd() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.IsConsecutiveEnd())
 		}
 	}
 }
@@ -340,8 +340,8 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 
 	for _, v := range lastConsecutives {
 		scanner.Scan()
-		if scanner.EndConsecutive() != v {
-			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.EndConsecutive())
+		if scanner.IsConsecutiveEnd() != v {
+			t.Errorf("at %d: Want %v, is %v\n", scanner.Index(), v, scanner.IsConsecutiveEnd())
 		}
 	}
 }

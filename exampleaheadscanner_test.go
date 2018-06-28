@@ -22,7 +22,7 @@ func ExampleNewAheadScanner_basic() {
 
 	for asc.Scan() {
 		fmt.Printf("%v:%q", asc.Index(), asc.Text())
-		if !asc.Last() {
+		if !asc.IsLast() {
 			fmt.Print(", ")
 		}
 	}
@@ -51,16 +51,16 @@ func ExampleNewAheadScanner_consecutive() {
 
 	beginSeq := 0
 	for asc.Scan() {
-		if asc.BeginConsecutive() {
+		if asc.IsConsecutiveBegin() {
 			beginSeq = asc.Index()
 		}
 		// there is no "else", as the matching-token-sequence can begin and end at the same token
-		if asc.EndConsecutive() {
+		if asc.IsConsecutiveEnd() {
 			fmt.Printf("[%v:%v],%v", beginSeq,
 				asc.Index()+1, // slice-like range
 				asc.NumConsecutive(),
 			)
-			if !asc.Last() {
+			if !asc.IsLast() {
 				fmt.Print("; ")
 			}
 		}
