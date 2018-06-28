@@ -6,7 +6,7 @@ import "bufio"
 // Can recognize a sequence of consecutive positive-matching tokens.
 type AheadScanner interface {
 	Scanner
-	IsLast() bool             // True if there is no more tokens scanner can scan
+	IsLast() bool             // True if current token is a last one that scanner can scan
 	IsConsecutiveBegin() bool // True if current token is a begin of consecutive positive-matching token sequence (even if its length is 1)
 	IsConsecutiveEnd() bool   // True if current token is at end of consecutive positive-matching token sequence (even if its length is 1)
 	NumConsecutive() int      // Number of tokens in a current consecutive positive-matching token sequence
