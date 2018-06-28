@@ -2,14 +2,14 @@ package scanio
 
 import "bufio"
 
-// AheadScanner can tell if the current token is the last one.
-// Does the one token forward-read to achieve this.
+// AheadScanner does one-token forward read. Can tell if the current token is the last available.
+// Can recognize a sequence of consecutive positive-matching tokens.
 type AheadScanner interface {
 	Scanner
-	IsLast() bool
-	IsConsecutiveBegin() bool // begin of consecutive positive-match sequence (even if its length is 1)
-	IsConsecutiveEnd() bool   // end of consecutive positive-match sequence (even if its length is 1)
-	NumConsecutive() int      // number of consecutive positive matches
+	IsLast() bool             // True if there is no more tokens scanner can scan
+	IsConsecutiveBegin() bool // True if current token is a begin of consecutive positive-matching token sequence (even if its length is 1)
+	IsConsecutiveEnd() bool   // True if current token is at end of consecutive positive-matching token sequence (even if its length is 1)
+	NumConsecutive() int      // Number of tokens in a current consecutive positive-matching token sequence
 }
 
 // info stores the Scanner's current state.
