@@ -80,12 +80,13 @@ func (sc *readerScanner) Index() int {
 //--------------------------------------------------------------------------------
 
 // MatchRule for NewRuleScanner.
-type MatchRule func(token []byte) (matched bool)
+type MatchRule func(token []byte) (matched bool, err error)
 
 type ruleScanner struct {
 	Scanner
 	rule    MatchRule
 	matched bool
+	err     error
 }
 
 // NewRuleScanner returns new, rule-based Scanner.
@@ -98,7 +99,10 @@ func NewRuleScanner(sc Scanner, rule MatchRule) Scanner {
 
 func (sc *ruleScanner) Scan() bool {
 	if sc.Scanner.Scan() {
-		sc.matched = sc.rule(sc.Scanner.Bytes())
+		sc.matched, sc.err = sc.rule(sc.Scanner.Bytes())
+		if sc.err != nil {
+			return false
+		}
 		return true
 	}
 	return false
@@ -106,6 +110,13 @@ func (sc *ruleScanner) Scan() bool {
 
 func (sc *ruleScanner) IsMatch() bool {
 	return sc.matched
+}
+
+func (sc *ruleScanner) Err() error {
+	if sc.err != nil {
+		return sc.err
+	}
+	return sc.Scanner.Err()
 }
 
 //--------------------------------------------------------------------------------

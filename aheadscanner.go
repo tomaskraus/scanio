@@ -17,6 +17,7 @@ type info struct {
 	ScanRes bool // holds result of Scanner.Scan()
 	Text    string
 	Bytes   []byte
+	Err     error
 	Index   int
 	IsMatch bool
 }
@@ -39,7 +40,7 @@ func (i *info) isConsecMatch(nextI *info) bool {
 
 // update makes a snapshot of Scanner's current state.
 func (i *info) update(sc Scanner, scResult bool) {
-	i.Text, i.Index, i.IsMatch, i.ScanRes = sc.Text(), sc.Index(), sc.IsMatch(), scResult
+	i.Text, i.Err, i.Index, i.IsMatch, i.ScanRes = sc.Text(), sc.Err(), sc.Index(), sc.IsMatch(), scResult
 	// preserve the underlying scanner's buffer
 	srcLen := len(sc.Bytes())
 	i.Bytes = i.Bytes[:srcLen]
@@ -119,6 +120,10 @@ func (sc *aheadScanner) Scan() bool {
 
 func (sc *aheadScanner) Text() string {
 	return sc.info.Text
+}
+
+func (sc *aheadScanner) Err() error {
+	return sc.info.Err
 }
 
 func (sc *aheadScanner) Buffer(buf []byte, max int) {

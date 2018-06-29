@@ -88,8 +88,8 @@ func ExampleNewRuleScanner() {
 		NewOnlyMatchScanner(
 			NewRuleScanner(
 				NewScanner(f),
-				func(b []byte) bool {
-					return bytes.HasPrefix(b, []byte("#"))
+				func(b []byte) (bool, error) {
+					return bytes.HasPrefix(b, []byte("#")), nil
 				})))
 
 	for scn.Scan() {
@@ -109,8 +109,8 @@ func ExampleNewFilterScanner() {
 	scn := NewAheadScanner(
 		NewFilterScanner(
 			NewScanner(f),
-			func(b []byte) bool {
-				return bytes.HasPrefix(b, []byte("#"))
+			func(b []byte) (bool, error) {
+				return bytes.HasPrefix(b, []byte("#")), nil
 			}))
 
 	for scn.Scan() {
@@ -174,8 +174,8 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) bool {
-		return bytes.HasPrefix(b, []byte("#"))
+	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+		return bytes.HasPrefix(b, []byte("#")), nil
 	}))
 
 	expected := []result{
@@ -207,8 +207,8 @@ func ExampleNewByteFilterScanner() {
 	// let's filter words beginning with "1"
 	scanner := NewFilterScanner(
 		NewScanner(strings.NewReader(input)),
-		func(input []byte) bool {
-			return (input[0] == []byte("1")[0])
+		func(input []byte) (bool, error) {
+			return (input[0] == []byte("1")[0]), nil
 		})
 
 	// Set the split function for the scanning operation.
@@ -232,8 +232,8 @@ func ExampleAheadScanner_NumConsecutive() {
 	sc := NewAheadScanner(
 		NewRuleScanner(
 			NewScanner(strings.NewReader(input)),
-			func(input []byte) bool {
-				return (input[0] == []byte("1")[0])
+			func(input []byte) (bool, error) {
+				return (input[0] == []byte("1")[0]), nil
 			}))
 
 	// Set the split function for the scanning operation.
@@ -308,8 +308,8 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 	scanner := NewAheadScanner(
 		NewRuleScanner(
 			NewScanner(strings.NewReader(input)),
-			func(input []byte) bool {
-				return (input[0] == []byte("1")[0])
+			func(input []byte) (bool, error) {
+				return (input[0] == []byte("1")[0]), nil
 			}))
 
 	// Set the split function for the scanning operation.
@@ -331,8 +331,8 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 	scanner := NewAheadScanner(
 		NewFilterScanner(
 			NewScanner(strings.NewReader(input)),
-			func(input []byte) bool {
-				return (input[0] == []byte("1")[0])
+			func(input []byte) (bool, error) {
+				return (input[0] == []byte("1")[0]), nil
 			}))
 
 	// Set the split function for the scanning operation.
