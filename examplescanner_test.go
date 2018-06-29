@@ -40,3 +40,52 @@ func ExampleNewFilterScanner_error() {
 	// 1:"123",3:"5",
 	// strconv.ParseInt: parsing "abc": invalid syntax
 }
+
+func ExampleNewFilterScanner() {
+
+	const input = "1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := scanio.NewFilterScanner(
+		scanio.NewScanner(strings.NewReader(input)),
+		func(input []byte) (bool, error) {
+			return (input[0] == []byte("1")[0]), nil
+		})
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+
+	// Output:
+	// 1234
+	// 123456
+}
+
+func ExampleNewFilterScanner_smallBuffer() {
+
+	const input = "1 1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := scanio.NewFilterScanner(
+		scanio.NewScanner(strings.NewReader(input)),
+		func(input []byte) (bool, error) {
+			return (input[0] == []byte("1")[0]), nil
+		})
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	//set buffer too small (here it has a capacity of 2)
+	scanner.Buffer(make([]byte, 0, 2), 0)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+
+	// Output:
+	// 1
+	// bufio.Scanner: token too long
+}
