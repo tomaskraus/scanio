@@ -3,6 +3,7 @@ package scanio
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -275,4 +276,103 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 			t.Errorf("should be %v, is %v", v, result{res, num, isMatch, text})
 		}
 	}
+}
+
+func TestOnlyNotMatchScannerEmpty(t *testing.T) {
+	f := strings.NewReader("")
+
+	scn := NewOnlyNotMatchScanner(NewScanner(f))
+
+	expected := []result{
+		{false, 0, false, ""},
+		{false, 0, false, ""},
+		{false, 0, false, ""},
+	}
+	for _, v := range expected {
+		res, num, isMatch, text := scn.Scan(), scn.NumRead(), scn.IsMatch(), scn.Text()
+
+		if res != v.canParse || num != v.num || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, isMatch, text})
+		}
+	}
+}
+func TestOnlyNotMatchScannerFull(t *testing.T) {
+	f, err := os.Open("assets/simpleFile.txt")
+	defer f.Close()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	scn := NewOnlyNotMatchScanner(NewScanner(f))
+
+	expected := []result{
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+	}
+	for _, v := range expected {
+		res, num, isMatch, text := scn.Scan(), scn.NumRead(), scn.IsMatch(), scn.Text()
+
+		if res != v.canParse || num != v.num || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, isMatch, text})
+		}
+	}
+}
+
+func TestOnlyNotMatchScannerRuled(t *testing.T) {
+	f, err := os.Open("assets/simpleFile.txt")
+	defer f.Close()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+		return bytes.HasPrefix(b, []byte("#")), nil
+	}))
+
+	expected := []result{
+		{true, 1, false, "this is a simple file"},
+		{true, 2, false, "next line is empty"},
+		{true, 3, false, ""},
+		{true, 4, false, "next line has two spaces"},
+		{true, 5, false, "  "},
+		{true, 7, false, "line with two trailing spaces  "},
+		{true, 8, false, " line with one leading space"},
+		{true, 9, false, " line with one leading and one trailing space "},
+		{true, 11, false, "last line"},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+		{false, 11, false, ""},
+	}
+	for _, v := range expected {
+		res, num, isMatch, text := scn.Scan(), scn.NumRead(), scn.IsMatch(), scn.Text()
+
+		if res != v.canParse || num != v.num || isMatch != v.isMatch || text != v.text {
+			t.Errorf("should be %v, is %v", v, result{res, num, isMatch, text})
+		}
+	}
+}
+
+func ExampleNewByteFilterScanner() {
+
+	const input = "1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := NewFilterScanner(
+		NewScanner(strings.NewReader(input)),
+		func(input []byte) (bool, error) {
+			return (input[0] == []byte("1")[0]), nil
+		})
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+
+	// Output:
+	// 1234
+	// 123456
 }
