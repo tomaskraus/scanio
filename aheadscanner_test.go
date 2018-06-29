@@ -83,6 +83,35 @@ func TestAheadScannerFull(t *testing.T) {
 	}
 }
 
+func ExampleNewAheadFilterScanner_smallBuffer() {
+
+	const input = "1 1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := scanio.NewAheadScanner(
+		scanio.NewFilterScanner(
+			scanio.NewScanner(strings.NewReader(input)),
+			func(input []byte) (bool, error) {
+				return (input[0] == []byte("1")[0]), nil
+			}))
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	// set buffer too small
+	// ensure the aheadScanner.Buffer() has the same behavior as bufio.Scanner.Buffer()
+	scanner.Buffer(make([]byte, 0, 2), 0)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+
+	// Output:
+	// 1
+	// bufio.Scanner: token too long
+}
+
 func ExampleNewRuleScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
@@ -105,7 +134,7 @@ func ExampleNewRuleScanner() {
 	// (2, "# comment 1"), (4, "#comment2").
 }
 
-func ExampleNewFilterScanner() {
+func ExampleNewAheadFilterScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
 	scn := scanio.NewAheadScanner(

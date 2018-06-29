@@ -357,7 +357,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 	}
 }
 
-func ExampleNewByteFilterScanner() {
+func ExampleNewFilterScanner() {
 
 	const input = "1234 5678 123456"
 	// let's filter words beginning with "1"
@@ -377,4 +377,31 @@ func ExampleNewByteFilterScanner() {
 	// Output:
 	// 1234
 	// 123456
+}
+
+func ExampleNewFilterScanner_smallBuffer() {
+
+	const input = "1 1234 5678 123456"
+	// let's filter words beginning with "1"
+	scanner := scanio.NewFilterScanner(
+		scanio.NewScanner(strings.NewReader(input)),
+		func(input []byte) (bool, error) {
+			return (input[0] == []byte("1")[0]), nil
+		})
+
+	// Set the split function for the scanning operation.
+	scanner.Split(bufio.ScanWords)
+	//set buffer too small
+	scanner.Buffer(make([]byte, 2), 2)
+	// Validate the input
+	for scanner.Scan() {
+		fmt.Printf("%s\n", scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+
+	// Output:
+	// 1
+	// bufio.Scanner: token too long
 }
