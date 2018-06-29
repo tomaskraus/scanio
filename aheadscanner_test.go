@@ -1,4 +1,4 @@
-package scanio
+package scanio_test
 
 import (
 	"bufio"
@@ -7,12 +7,14 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/tomaskraus/scanio"
 )
 
 func TestAheadScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewAheadScanner(NewScanner(f))
+	scn := scanio.NewAheadScanner(scanio.NewScanner(f))
 
 	expected := []resultL{
 		{false, 0, false, "", true},
@@ -30,7 +32,7 @@ func TestAheadScannerEmpty(t *testing.T) {
 func TestAheadScannerOneLine(t *testing.T) {
 	f := strings.NewReader("one line")
 
-	scn := NewAheadScanner(NewScanner(f))
+	scn := scanio.NewAheadScanner(scanio.NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "one line", true},
@@ -54,7 +56,7 @@ func TestAheadScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewAheadScanner(NewScanner(f))
+	scn := scanio.NewAheadScanner(scanio.NewScanner(f))
 
 	expected := []resultL{
 		{true, 1, true, "this is a simple file", false},
@@ -84,10 +86,10 @@ func TestAheadScannerFull(t *testing.T) {
 func ExampleNewRuleScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	scn := NewAheadScanner(
-		NewOnlyMatchScanner(
-			NewRuleScanner(
-				NewScanner(f),
+	scn := scanio.NewAheadScanner(
+		scanio.NewOnlyMatchScanner(
+			scanio.NewRuleScanner(
+				scanio.NewScanner(f),
 				func(b []byte) (bool, error) {
 					return bytes.HasPrefix(b, []byte("#")), nil
 				})))
@@ -106,9 +108,9 @@ func ExampleNewRuleScanner() {
 func ExampleNewFilterScanner() {
 	f := strings.NewReader("\n# comment 1\n  \n#comment2\nsomething")
 
-	scn := NewAheadScanner(
-		NewFilterScanner(
-			NewScanner(f),
+	scn := scanio.NewAheadScanner(
+		scanio.NewFilterScanner(
+			scanio.NewScanner(f),
 			func(b []byte) (bool, error) {
 				return bytes.HasPrefix(b, []byte("#")), nil
 			}))
@@ -130,9 +132,9 @@ func ExampleAheadScanner_NumConsecutive() {
 
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	// let's match words beginning with "1"
-	sc := NewAheadScanner(
-		NewRuleScanner(
-			NewScanner(strings.NewReader(input)),
+	sc := scanio.NewAheadScanner(
+		scanio.NewRuleScanner(
+			scanio.NewScanner(strings.NewReader(input)),
 			func(input []byte) (bool, error) {
 				return (input[0] == []byte("1")[0]), nil
 			}))
@@ -163,8 +165,8 @@ func ExampleAheadScanner_NumConsecutive2() {
 
 	const input = "34 235 1234"
 	// let's match words beginning with "1"
-	sc := NewAheadScanner(
-		NewScanner(strings.NewReader(input)),
+	sc := scanio.NewAheadScanner(
+		scanio.NewScanner(strings.NewReader(input)),
 	)
 
 	// Set the split function for the scanning operation.
@@ -187,8 +189,8 @@ func lastConsecutiveMatch(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{false, false, false, false, false, false, false, false, false, false}
 	// let's filter words beginning with "1"
-	scanner := NewAheadScanner(
-		NewScanner(strings.NewReader(input)))
+	scanner := scanio.NewAheadScanner(
+		scanio.NewScanner(strings.NewReader(input)))
 
 	// Set the split function for the scanning operation.
 	scanner.Split(bufio.ScanWords)
@@ -206,9 +208,9 @@ func TestLastConsecutiveMatchRuled(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{false, false, true, false, false, false, true, false, false, true}
 	// let's filter words beginning with "1"
-	scanner := NewAheadScanner(
-		NewRuleScanner(
-			NewScanner(strings.NewReader(input)),
+	scanner := scanio.NewAheadScanner(
+		scanio.NewRuleScanner(
+			scanio.NewScanner(strings.NewReader(input)),
 			func(input []byte) (bool, error) {
 				return (input[0] == []byte("1")[0]), nil
 			}))
@@ -229,9 +231,9 @@ func TestLastConsecutiveMatchFilter(t *testing.T) {
 	const input = "34 235 1234 5678 123456 145 1 2 15678 123"
 	lastConsecutives := []bool{true, false, false, true, false, true}
 	// let's filter words beginning with "1"
-	scanner := NewAheadScanner(
-		NewFilterScanner(
-			NewScanner(strings.NewReader(input)),
+	scanner := scanio.NewAheadScanner(
+		scanio.NewFilterScanner(
+			scanio.NewScanner(strings.NewReader(input)),
 			func(input []byte) (bool, error) {
 				return (input[0] == []byte("1")[0]), nil
 			}))

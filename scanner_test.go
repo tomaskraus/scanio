@@ -1,4 +1,4 @@
-package scanio
+package scanio_test
 
 import (
 	"bufio"
@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/tomaskraus/scanio"
 )
 
 type result struct {
@@ -26,7 +28,7 @@ type resultL struct {
 
 func TestScanWords(t *testing.T) {
 	f := strings.NewReader("This is example  ")
-	scn := NewScanner(f)
+	scn := scanio.NewScanner(f)
 	scn.Split(bufio.ScanWords)
 
 	expected := []result{
@@ -50,7 +52,7 @@ func TestScanWords(t *testing.T) {
 func TestReaderScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewScanner(f)
+	scn := scanio.NewScanner(f)
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -75,7 +77,7 @@ func TestScannerFile(t *testing.T) {
 		return
 	}
 
-	scn := NewScanner(f)
+	scn := scanio.NewScanner(f)
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -111,7 +113,7 @@ func TestRuleScanner(t *testing.T) {
 	}
 
 	// matches a line with a # at the begin, trims a #
-	scn := NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+	scn := scanio.NewRuleScanner(scanio.NewScanner(f), func(b []byte) (bool, error) {
 		return bytes.HasPrefix(b, []byte("#")), nil
 	})
 
@@ -143,7 +145,7 @@ func TestRuleScanner(t *testing.T) {
 func TestRuleScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+	scn := scanio.NewRuleScanner(scanio.NewScanner(f), func(b []byte) (bool, error) {
 		return bytes.HasPrefix(b, []byte("#")), nil
 	})
 
@@ -168,7 +170,7 @@ func TestRuleScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+	scn := scanio.NewRuleScanner(scanio.NewScanner(f), func(b []byte) (bool, error) {
 		return bytes.HasPrefix(b, []byte("#")), nil
 	})
 
@@ -200,7 +202,7 @@ func TestRuleScannerFull(t *testing.T) {
 func TestOnlyMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewOnlyMatchScanner(NewScanner(f))
+	scn := scanio.NewOnlyMatchScanner(scanio.NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -223,7 +225,7 @@ func TestOnlyMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyMatchScanner(NewScanner(f))
+	scn := scanio.NewOnlyMatchScanner(scanio.NewScanner(f))
 
 	expected := []result{
 		{true, 1, true, "this is a simple file"},
@@ -258,7 +260,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+	scn := scanio.NewOnlyMatchScanner(scanio.NewRuleScanner(scanio.NewScanner(f), func(b []byte) (bool, error) {
 		return bytes.HasPrefix(b, []byte("#")), nil
 	}))
 
@@ -281,7 +283,7 @@ func TestOnlyMatchScannerRuled(t *testing.T) {
 func TestOnlyNotMatchScannerEmpty(t *testing.T) {
 	f := strings.NewReader("")
 
-	scn := NewOnlyNotMatchScanner(NewScanner(f))
+	scn := scanio.NewOnlyNotMatchScanner(scanio.NewScanner(f))
 
 	expected := []result{
 		{false, 0, false, ""},
@@ -304,7 +306,7 @@ func TestOnlyNotMatchScannerFull(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyNotMatchScanner(NewScanner(f))
+	scn := scanio.NewOnlyNotMatchScanner(scanio.NewScanner(f))
 
 	expected := []result{
 		{false, 11, false, ""},
@@ -328,7 +330,7 @@ func TestOnlyNotMatchScannerRuled(t *testing.T) {
 		return
 	}
 
-	scn := NewOnlyNotMatchScanner(NewRuleScanner(NewScanner(f), func(b []byte) (bool, error) {
+	scn := scanio.NewOnlyNotMatchScanner(scanio.NewRuleScanner(scanio.NewScanner(f), func(b []byte) (bool, error) {
 		return bytes.HasPrefix(b, []byte("#")), nil
 	}))
 
@@ -359,8 +361,8 @@ func ExampleNewByteFilterScanner() {
 
 	const input = "1234 5678 123456"
 	// let's filter words beginning with "1"
-	scanner := NewFilterScanner(
-		NewScanner(strings.NewReader(input)),
+	scanner := scanio.NewFilterScanner(
+		scanio.NewScanner(strings.NewReader(input)),
 		func(input []byte) (bool, error) {
 			return (input[0] == []byte("1")[0]), nil
 		})
