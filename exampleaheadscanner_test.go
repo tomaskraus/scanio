@@ -22,14 +22,14 @@ func ExampleNewAheadScanner_basic() {
 	asc := scanio.NewAheadScanner(sc)
 
 	for asc.Scan() {
-		fmt.Printf("%v:%q", asc.Index(), asc.Text())
+		fmt.Printf("%v:%q", asc.NumRead(), asc.Text())
 		if !asc.IsLast() {
 			fmt.Print(", ")
 		}
 	}
 
 	// Output:
-	// 0:"One", 1:"two", 2:"three"
+	// 1:"One", 2:"two", 3:"three"
 }
 
 func ExampleNewAheadScanner_consecutive() {
@@ -53,12 +53,12 @@ func ExampleNewAheadScanner_consecutive() {
 	beginSeq := 0
 	for asc.Scan() {
 		if asc.IsConsecutiveBegin() {
-			beginSeq = asc.Index()
+			beginSeq = asc.NumRead() - 1
 		}
 		// there is no "else", as the matching-token-sequence can begin and end at the same token
 		if asc.IsConsecutiveEnd() {
 			fmt.Printf("[%v:%v],%v", beginSeq,
-				asc.Index()+1, // slice-like range
+				asc.NumRead(),
 				asc.NumConsecutive(),
 			)
 			if !asc.IsLast() {
@@ -95,7 +95,7 @@ func ExampleNewAheadScanner_error() {
 		scanio.NewFilterScanner(sc, isPositiveInt))
 
 	for asc.Scan() {
-		fmt.Printf("%v:%q", asc.Index(), asc.Text())
+		fmt.Printf("%v:%q", asc.NumRead(), asc.Text())
 		if !asc.IsLast() {
 			fmt.Print(", ")
 		}
@@ -105,6 +105,6 @@ func ExampleNewAheadScanner_error() {
 	}
 
 	// Output:
-	// 0:"123", 2:"5"
+	// 1:"123", 3:"5"
 	// strconv.ParseInt: parsing "abc": invalid syntax
 }

@@ -30,13 +30,13 @@ func ExampleNewFilterScanner_error() {
 	asc := scanio.NewFilterScanner(sc, isPositiveInt)
 
 	for asc.Scan() {
-		fmt.Printf("%v:%q,", asc.Index(), asc.Text())
+		fmt.Printf("%v:%q,", asc.NumRead(), asc.Text())
 	}
 	if asc.Err() != nil {
 		fmt.Printf("\n%v", asc.Err())
 	}
 
 	// Output:
-	// 0:"123",2:"5",
+	// 1:"123",3:"5",
 	// strconv.ParseInt: parsing "abc": invalid syntax
 }

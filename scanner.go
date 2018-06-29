@@ -8,7 +8,7 @@ import (
 )
 
 // Scanner interface reflects the set of methods of the bufio.Scanner.
-// Adds two more methods: index of the token scanned and token-match status.
+// Adds two more methods: number of the tokens scanned and match status.
 type Scanner interface {
 	Buffer(buf []byte, max int)
 	Bytes() []byte
@@ -17,8 +17,8 @@ type Scanner interface {
 	Split(split bufio.SplitFunc)
 	Text() string
 
-	IsMatch() bool // true if a token matches Scanner's MatchRule
-	Index() int    // index of a current token (first token starts from 0). Returns -1 if no tokens are scanned.
+	IsMatch() bool // true if current token matches Scanner's MatchRule
+	NumRead() int  // number of all tokens read
 }
 
 //--------------------------------------------------------------------
@@ -27,15 +27,14 @@ type Scanner interface {
 type readerScanner struct {
 	scn   *bufio.Scanner
 	match bool
-	index int
+	num   int
 }
 
 // NewScanner creates a new Scanner using a Reader.
 // This Scanner can be used instead of bufio.Scanner
 func NewScanner(r io.Reader) Scanner {
 	return Scanner(&readerScanner{
-		scn:   bufio.NewScanner(r),
-		index: -1,
+		scn: bufio.NewScanner(r),
 	})
 }
 
@@ -45,7 +44,7 @@ func (sc *readerScanner) Buffer(b []byte, max int) {
 
 func (sc *readerScanner) Scan() bool {
 	if sc.scn.Scan() {
-		sc.index++
+		sc.num++
 		sc.match = true
 		return true
 	}
@@ -73,8 +72,8 @@ func (sc *readerScanner) IsMatch() bool {
 	return sc.match
 }
 
-func (sc *readerScanner) Index() int {
-	return sc.index
+func (sc *readerScanner) NumRead() int {
+	return sc.num
 }
 
 //--------------------------------------------------------------------------------
