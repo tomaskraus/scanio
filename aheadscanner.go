@@ -129,7 +129,7 @@ func (sc *aheadScanner) Err() error {
 func (sc *aheadScanner) Buffer(buf []byte, max int) {
 	sc.Scanner.Buffer(buf, max)
 	// memorize size values for future creation of prev/next buffers
-	sc.bufSize, sc.bufCap = len(buf), max
+	sc.bufSize, sc.bufCap = cap(buf), max
 	if sc.bufCap < sc.bufSize {
 		sc.bufCap = sc.bufSize
 	}
